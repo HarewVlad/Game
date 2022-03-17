@@ -41,11 +41,11 @@ bool TextureManager::Add(const char *name, void *data, int length) {
   return true;
 }
 
-void TextureManager::Bind(const char *name) {
+void TextureManager::Bind(const char *name, unsigned int slot) {
   if (m_textures.find(name) != m_textures.end()) {
     unsigned int id = m_textures[name]->id;
 
-    glCall(glActiveTexture(GL_TEXTURE0 + id));
+    glCall(glActiveTexture(GL_TEXTURE0 + slot));
     glCall(glBindTexture(GL_TEXTURE_2D, id));
   }
 }

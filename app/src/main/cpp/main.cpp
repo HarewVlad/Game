@@ -120,8 +120,8 @@ int main() {
   IndexBuffer index_buffer;
   VertexBufferLayout vertex_buffer_layout;
   VertexArray vertex_array;
-  int32_t width = glfw_manager.m_width;
-  int32_t height = glfw_manager.m_height;
+  int32_t width = glfw_manager.m_width * 2;
+  int32_t height = glfw_manager.m_height * 2;
   {
     // Vertex buffer
     std::vector<float> vertices = {-width / 2.0f, -height / 2.0f, 0.0f, 0.0f,

@@ -43,8 +43,8 @@ void Texture::InitializeGraphics(void *buffer) {
   glCall(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
-void Texture::Bind() {
-  glCall(glActiveTexture(GL_TEXTURE0 + m_id));
+void Texture::Bind(unsigned int slot) {
+  glCall(glActiveTexture(GL_TEXTURE0 + slot));
   glCall(glBindTexture(GL_TEXTURE_2D, m_id));
 }
 

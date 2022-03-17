@@ -6,7 +6,7 @@ struct Texture {
   bool Initialize(void *data, int length);
   bool Initialize(const char *filename);
   void InitializeGraphics(void *buffer);
-  void Bind();
+  void Bind(unsigned int slot = 0);
   void Unbind();
 
   unsigned int m_id;

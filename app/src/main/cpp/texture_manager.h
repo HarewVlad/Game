@@ -13,10 +13,10 @@ struct TextureManager {
   bool Initialize();
   bool Add(const char *name, const char *filename);
   bool Add(const char *name, void *data, int length);
-  void Bind(const char *name);
+  void Bind(const char *name, unsigned int slot = 0);
   void Unbind();
 
   void InitializeGraphics(Texture *texture, void *buffer);
-  
+
   std::unordered_map<std::string, Texture *> m_textures;
 };
