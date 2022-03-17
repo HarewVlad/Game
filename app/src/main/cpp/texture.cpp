@@ -7,6 +7,30 @@ bool Texture::Initialize(void *data, int length) {
     return false;
   }
 
+  InitializeGraphics(buffer);
+
+  stbi_image_free(buffer);
+
+  return true;
+}
+
+bool Texture::Initialize(const char *filename) {
+  stbi_set_flip_vertically_on_load(1);
+
+  unsigned char *buffer = stbi_load(filename, &m_width, &m_height, &m_bpp, 4);
+  if (!buffer) {
+    LOG(LOG_ERROR, "Texture", "%s", "Unable to load texture");
+    return false;
+  }
+
+  InitializeGraphics(buffer);
+
+  stbi_image_free(buffer);
+
+  return true;
+}
+
+void Texture::InitializeGraphics(void *buffer) {
   glCall(glGenTextures(1, &m_id));
   glCall(glBindTexture(GL_TEXTURE_2D, m_id));
 
@@ -17,17 +41,6 @@ bool Texture::Initialize(void *data, int length) {
 
   glCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer));
   glCall(glBindTexture(GL_TEXTURE_2D, 0));
-
-  stbi_image_free(buffer);
-
-  return true;
-}
-
-Texture::Texture() {
-  m_id = 0;
-  m_width = 0;
-  m_height = 0;
-  m_bpp = 0;
 }
 
 void Texture::Bind() {

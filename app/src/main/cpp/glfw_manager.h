@@ -3,4 +3,6 @@ struct GLFWManager {
   void Shutdown();
 
   GLFWwindow *m_window;
+  UINT m_width;
+  UINT m_height;
 };

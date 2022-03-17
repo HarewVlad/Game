@@ -1,5 +1,3 @@
-VertexArray::VertexArray() { m_id = 0; }
-
 bool VertexArray::Initialize() {
   glCall(glGenVertexArrays(1, &m_id));
 

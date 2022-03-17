@@ -1,7 +1,3 @@
-Box::Box() {
-
-}
-
 bool Box::Initialize(IndexBuffer *index_buffer, VertexArray *vertex_array) {
   m_vertex_array = vertex_array;
   m_index_buffer = index_buffer;

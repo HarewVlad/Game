@@ -24,6 +24,9 @@ bool GLFWManager::Initialize(UINT width, UINT height, const char *title) {
     return false;
   }
 
+  m_width = width;
+  m_height = height;
+
   return true;
 }
 

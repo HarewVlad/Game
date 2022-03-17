@@ -1,9 +1,11 @@
 // TODO: Create TextureGroup (Forest, House, ...) and store it in m_textures
 // TODO: Add glDeleteTextures(1, &m_id);
+// TODO: (VERY IMPORTANT) Make TextureManager
 
 struct Texture {
-  Texture();
   bool Initialize(void *data, int length);
+  bool Initialize(const char *filename);
+  void InitializeGraphics(void *buffer);
   void Bind();
   void Unbind();
 

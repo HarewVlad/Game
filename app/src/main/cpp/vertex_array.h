@@ -1,5 +1,4 @@
 struct VertexArray {
-  VertexArray();
   bool Initialize();
   void AddBuffer(VertexBuffer *vertex_buffer,
                  VertexBufferLayout *vertex_buffer_layout);

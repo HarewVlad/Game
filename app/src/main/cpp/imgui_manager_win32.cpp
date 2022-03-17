@@ -3,6 +3,8 @@ bool ImGuiManagerWin32::Initialize(GLFWwindow *window) {
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init();
   ImGui::StyleColorsDark();
+
+  return true;
 }
 
 void ImGuiManagerWin32::Shutdown() {

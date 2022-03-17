@@ -150,8 +150,8 @@ void AndroidManager::Render(struct android_app *app) {
   if (m_egl->m_egl_display == EGL_NO_DISPLAY)
     return;
 
-  m_imgui_manager->BeginRender(); // NOTE(Vlad): May be specifi to OS
-  m_imgui_manager->Render(app);
+  m_imgui_manager->RenderBegin(app); // NOTE(Vlad): May be specifi to OS
+  m_imgui_manager->Render();
   m_game->Render();
 
   eglSwapBuffers(m_egl->m_egl_display, m_egl->m_egl_surface);

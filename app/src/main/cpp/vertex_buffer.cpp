@@ -1,5 +1,3 @@
-VertexBuffer::VertexBuffer() { m_id = 0; }
-
 bool VertexBuffer::Initialize(const void *data, unsigned int size) {
   glCall(glGenBuffers(1, &m_id));
   glCall(glBindBuffer(GL_ARRAY_BUFFER, m_id));

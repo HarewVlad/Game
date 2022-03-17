@@ -25,23 +25,23 @@ void EglManager::Shutdown(struct android_app *app) {
 bool EglManager::Initialize(struct android_app *app) {
   m_egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   if (m_egl_display == EGL_NO_DISPLAY) {
-      LOG(LOG_ERROR, Global_LogTag, "%s", "eglGetDisplay(EGL_DEFAULT_DISPLAY) returned EGL_NO_DISPLAY");
+      LOG(LOG_ERROR, "EglManager", "%s", "eglGetDisplay(EGL_DEFAULT_DISPLAY) returned EGL_NO_DISPLAY");
       return false;
   }
 
   if (eglInitialize(m_egl_display, 0, 0) != EGL_TRUE) {
-      LOG(LOG_ERROR, Global_LogTag, "%s", "eglInitialize() returned with an error");
+      LOG(LOG_ERROR, "EglManager", "%s", "eglInitialize() returned with an error");
       return false;
   }
 
   const EGLint egl_attributes[] = { EGL_BLUE_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_RED_SIZE, 8, EGL_DEPTH_SIZE, 24, EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE };
   EGLint num_configs = 0;
   if (eglChooseConfig(m_egl_display, egl_attributes, nullptr, 0, &num_configs) != EGL_TRUE) {
-      LOG(LOG_ERROR, Global_LogTag, "%s", "eglChooseConfig() returned with an error");
+      LOG(LOG_ERROR, "EglManager", "%s", "eglChooseConfig() returned with an error");
       return false;
   }
   if (num_configs == 0) {
-      LOG(LOG_ERROR, Global_LogTag, "%s", "eglChooseConfig() returned 0 matching config");
+      LOG(LOG_ERROR, "EglManager", "%s", "eglChooseConfig() returned 0 matching config");
       return false;
   }
 
@@ -56,7 +56,7 @@ bool EglManager::Initialize(struct android_app *app) {
   m_egl_context = eglCreateContext(m_egl_display, egl_config, EGL_NO_CONTEXT, egl_context_attributes);
 
   if (m_egl_context == EGL_NO_CONTEXT) {
-      LOG(LOG_ERROR, Global_LogTag, "%s", "eglCreateContext() returned EGL_NO_CONTEXT");
+      LOG(LOG_ERROR, "EglManager", "%s", "eglCreateContext() returned EGL_NO_CONTEXT");
       return false;
   }
 

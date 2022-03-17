@@ -19,7 +19,3 @@ bool Shader::Initialize(const char *code, unsigned int type) {
 
   return true;
 }
-
-Shader::Shader() {
-  m_id = -1;
-}

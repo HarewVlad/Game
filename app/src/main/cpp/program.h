@@ -1,5 +1,4 @@
 struct Program {
-  Program();
   bool Initialize();
   void AddShader(const Shader *shader);
   void Link();

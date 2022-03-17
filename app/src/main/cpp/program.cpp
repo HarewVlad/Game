@@ -15,8 +15,6 @@ void Program::Bind() { glCall(glUseProgram(m_id)); }
 
 void Program::Unbind() { glCall(glUseProgram(0)); }
 
-Program::Program() { m_id = -1; }
-
 int Program::GetUniformLocation(const char *name) {
   glCall(int location = glGetUniformLocation(m_id, name));
   return location;

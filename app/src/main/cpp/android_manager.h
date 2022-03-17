@@ -1,4 +1,4 @@
-// NOTE: "On" prefix because it is event =)
+// NOTE(Vlad): "On" prefix because it is event =)
 
 struct AndroidManager {
   AndroidManager();

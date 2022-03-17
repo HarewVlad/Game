@@ -1,5 +1,4 @@
 struct VertexBuffer {
-  VertexBuffer();
   bool Initialize(const void *data, unsigned int size);
   void Bind();
   void Unbind();

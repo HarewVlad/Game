@@ -52,8 +52,10 @@ static bool Global_IsInitialized = false;
 #include "game.h"
 #include "imgui_manager.h"
 #ifdef __ANDROID__
+  #include "imgui_manager_android.h"
   #include "android_manager.h"
 #elif defined _WIN32
+  #include "imgui_manager_win32.h"
   #include "win32_manager.h"
 #endif
 

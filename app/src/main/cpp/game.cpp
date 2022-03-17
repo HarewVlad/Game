@@ -5,8 +5,6 @@ bool Game::Initialize(Program *program, Background *background) {
   return true;
 }
 
-void Game::Shutdown() {}
-
 // NOTE: Test
 void Game::Render() {
   m_program->Bind();
@@ -20,4 +18,8 @@ void Game::Render() {
   m_program->SetUniform1i("u_Texture", 0);
   m_background->Render();
   m_program->Unbind();
+}
+
+void Game::Update(float dt) {
+  
 }
