@@ -47,6 +47,7 @@ static bool Global_IsInitialized = false;
 #include "box.h"
 #include "shader.h"
 #include "program.h"
+// #include "texture_manager.h"
 #include "texture.h"
 #include "background.h"
 #include "game.h"
