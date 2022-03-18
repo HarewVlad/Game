@@ -1,4 +1,5 @@
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_DS_IMPLEMENTATION
 #define GLEW_STATIC
 
 #ifdef __ANDROID__
@@ -20,16 +21,11 @@
   #include "imgui/imgui_impl_glfw.h"
 #endif
 #include "imgui/imgui_impl_opengl3.h"
-#include "stb_image/stb_image.h"
+#include "stb/stb_image.h"
+#include "stb/stb_ds.h"
 #include "glm/glm.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
-
-// TODO: Replace all this shit by "stb_ds.h"
-#include <unordered_map>
-#include <string>
-#include <vector>
-//
 
 static bool Global_IsInitialized = false;
 

@@ -11,7 +11,7 @@ void VertexArray::AddBuffer(VertexBuffer *vertex_buffer,
 
   const auto &elements = vertex_buffer_layout->m_elements;
   unsigned int offset = 0;
-  for (unsigned int i = 0; i < elements.size(); ++i) {
+  for (unsigned int i = 0; i < arrlen(elements); ++i) {
     const auto &element = elements[i];
 
     glCall(glEnableVertexAttribArray(i));

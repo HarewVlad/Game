@@ -119,24 +119,27 @@ int main() {
   VertexBuffer vertex_buffer;
   IndexBuffer index_buffer;
   VertexBufferLayout vertex_buffer_layout;
+  vertex_buffer_layout.Initialize();
   VertexArray vertex_array;
   int32_t width = glfw_manager.m_width * 2;
   int32_t height = glfw_manager.m_height * 2;
   {
     // Vertex buffer
-    std::vector<float> vertices = {-width / 2.0f, -height / 2.0f, 0.0f, 0.0f,
+    float vertices[] = {-width / 2.0f, -height / 2.0f, 0.0f, 0.0f,
                                    -width / 2.0f, height / 2.0f,  0.0f, 1.0f,
                                    width / 2.0f,  height / 2.0f,  1.0f, 1.0f,
                                    width / 2.0f,  -height / 2.0f, 1.0f, 0.0f};
-    vertex_buffer.Initialize(&vertices[0], sizeof(float) * vertices.size());
+    vertex_buffer.Initialize(&vertices[0], sizeof(vertices));
 
     // Index buffer
-    std::vector<unsigned int> indices = {0, 1, 2, 0, 2, 3};
-    index_buffer.Initialize(&indices[0], indices.size());
+    unsigned int indices[] = {0, 1, 2, 0, 2, 3};
+    index_buffer.Initialize(&indices[0], sizeof(indices) / sizeof(unsigned int));
 
     // Vertex array
-    vertex_buffer_layout.Push<float>(2);
-    vertex_buffer_layout.Push<float>(2);
+    // vertex_buffer_layout.Push<float>(2);
+    // vertex_buffer_layout.Push<float>(2);
+    vertex_buffer_layout.Push(GL_FLOAT, 2);
+    vertex_buffer_layout.Push(GL_FLOAT, 2);
     vertex_array.Initialize();
     vertex_array.AddBuffer(&vertex_buffer, &vertex_buffer_layout);
 
