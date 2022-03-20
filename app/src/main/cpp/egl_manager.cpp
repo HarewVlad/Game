@@ -1,9 +1,3 @@
-EglManager::EglManager() {
-  m_egl_display = EGL_NO_DISPLAY;
-  m_egl_surface = EGL_NO_SURFACE;
-  m_egl_context = EGL_NO_CONTEXT;
-}
-
 void EglManager::Shutdown(struct android_app *app) {
   if (m_egl_display != EGL_NO_DISPLAY) {
     eglMakeCurrent(m_egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);

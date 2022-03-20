@@ -9,14 +9,20 @@ struct Texture {
   int bpp;
 };
 
+struct TextureMap {
+  char *key;
+  Texture *value;
+};
+
 struct TextureManager {
   bool Initialize();
-  bool Add(const char *name, const char *filename);
-  bool Add(const char *name, void *data, int length);
-  void Bind(const char *name, unsigned int slot = 0);
+  bool Add(char *name, const char *filename);
+  bool Add(char *name, void *data, int length);
+  void Bind(char *name, unsigned int slot = 0);
   void Unbind();
+  void Shutdown();
 
   void InitializeGraphics(Texture *texture, void *buffer);
 
-  std::unordered_map<std::string, Texture *> m_textures;
+  TextureMap *m_textures;
 };

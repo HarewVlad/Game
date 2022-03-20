@@ -1,10 +1,12 @@
 bool TextureManager::Initialize() {
   stbi_set_flip_vertically_on_load(1);
 
+  m_textures = NULL;
+
   return true;
 }
 
-bool TextureManager::Add(const char *name, const char *filename) {
+bool TextureManager::Add(char *name, const char *filename) {
   Texture *texture = (Texture *)malloc(sizeof(Texture));
 
   unsigned char *buffer = stbi_load(filename, &texture->width, &texture->height, &texture->bpp, 4);
@@ -17,12 +19,12 @@ bool TextureManager::Add(const char *name, const char *filename) {
 
   stbi_image_free(buffer);
 
-  m_textures[name] = texture;
+  hmput(m_textures, name, texture);
 
   return true;
 }
 
-bool TextureManager::Add(const char *name, void *data, int length) {
+bool TextureManager::Add(char *name, void *data, int length) {
   Texture *texture = (Texture *)malloc(sizeof(Texture));
 
   unsigned char *buffer = stbi_load_from_memory((unsigned char *)data, length, &texture->width, &texture->height, &texture->bpp, 4);
@@ -36,14 +38,14 @@ bool TextureManager::Add(const char *name, void *data, int length) {
 
   stbi_image_free(buffer);
 
-  m_textures[name] = texture;
+  hmput(m_textures, name, texture);
 
   return true;
 }
 
-void TextureManager::Bind(const char *name, unsigned int slot) {
-  if (m_textures.find(name) != m_textures.end()) {
-    unsigned int id = m_textures[name]->id;
+void TextureManager::Bind(char *name, unsigned int slot) {
+  if (hmgeti(m_textures, name) >= 0) {
+    unsigned int id = hmget(m_textures, name)->id;
 
     glCall(glActiveTexture(GL_TEXTURE0 + slot));
     glCall(glBindTexture(GL_TEXTURE_2D, id));
@@ -65,4 +67,11 @@ void TextureManager::InitializeGraphics(Texture *texture, void *buffer) {
 
   glCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer));
   glCall(glBindTexture(GL_TEXTURE_2D, 0));
+}
+  
+// TODO: Need to test this
+void TextureManager::Shutdown() {
+  Unbind();
+
+  hmfree(m_textures);
 }
