@@ -18,5 +18,5 @@ target_link_libraries(native-activity
     android
     native_app_glue
     EGL
-        GLESv3
+    GLESv3
     log)

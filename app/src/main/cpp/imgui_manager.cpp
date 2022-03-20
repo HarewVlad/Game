@@ -45,8 +45,5 @@ void ImGuiManager::Render() {
 
   // Rendering
   ImGui::Render();
-  glCall(glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y));
-  // glCall(glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w));
-  // glCall(glClear(GL_COLOR_BUFFER_BIT));
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

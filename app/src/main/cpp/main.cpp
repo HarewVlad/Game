@@ -32,8 +32,13 @@
 #include "program.cpp"
 // #include "texture_manager.cpp"
 #include "texture.cpp"
+#include "input.cpp"
+#include "camera.cpp"
 #include "background.cpp"
 #include "game.cpp"
+// Include your game here
+#include "falling_creatures/falling_creatures.cpp"
+//
 #include "imgui_manager.cpp"
 
 #ifdef __ANDROID__
@@ -41,6 +46,10 @@
 #elif defined _WIN32
   #include "imgui_manager_win32.cpp"
 #endif
+
+void Initialize() {
+  stbds_rand_seed(time(NULL));
+}
 
 // TODO: Rework code, make initialization the same for two platforms
 
@@ -59,8 +68,10 @@ void android_main(struct android_app *app) {
 #elif defined _WIN32
 
 int main() {
+  Initialize();
+
   GLFWManager glfw_manager;
-  if (!glfw_manager.Initialize(1024, 720, "Game")) {
+  if (!glfw_manager.Initialize(1920, 1080, "Game")) {
     return -1;
   }
 
@@ -121,8 +132,8 @@ int main() {
   VertexBufferLayout vertex_buffer_layout;
   vertex_buffer_layout.Initialize();
   VertexArray vertex_array;
-  int32_t width = glfw_manager.m_width * 2;
-  int32_t height = glfw_manager.m_height * 2;
+  int32_t width = glfw_manager.m_width / 2;
+  int32_t height = glfw_manager.m_height / 2;
   {
     // Vertex buffer
     float vertices[] = {-width / 2.0f, -height / 2.0f, 0.0f, 0.0f,
@@ -136,27 +147,35 @@ int main() {
     index_buffer.Initialize(&indices[0], sizeof(indices) / sizeof(unsigned int));
 
     // Vertex array
-    // vertex_buffer_layout.Push<float>(2);
-    // vertex_buffer_layout.Push<float>(2);
     vertex_buffer_layout.Push(GL_FLOAT, 2);
     vertex_buffer_layout.Push(GL_FLOAT, 2);
     vertex_array.Initialize();
     vertex_array.AddBuffer(&vertex_buffer, &vertex_buffer_layout);
 
-    box.Initialize(&index_buffer, &vertex_array);
+    box.Initialize(&index_buffer, &vertex_array, width, height);
   }
 
-  Background background;
-  background.Initialize(&box, &texture);
+  Camera camera;
+  camera.Initialize();
 
-  Game game;
-  game.Initialize(&program, &background);
+  Background background;
+  background.Initialize(&glfw_manager, &program, &camera, &box, &texture);
+
+  Input input;
+  input.Initialize(&glfw_manager);
+  int keys[] = {'W', 'A', 'S', 'D'};
+  input.Add(&keys[0], sizeof(keys) / sizeof(int));
+
+  FallingCreatures falling_creatures;
+  falling_creatures.Initialize(&background);
 
   Win32Manager win32_manager;
   {
-    win32_manager.Initialize(&glfw_manager, &imgui_manager_win32, &game);
+    win32_manager.Initialize(&glfw_manager, &imgui_manager_win32, &input, &camera, &falling_creatures);
     win32_manager.Run();
   }
+
+  ExitProcess(0);
 }
 
 #endif

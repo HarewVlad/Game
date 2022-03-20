@@ -1,11 +1,6 @@
-// NOTE(Vlad): Cloning Falling Creatures game there
-
+// NOTE(Vlad): Your game should have this methods at least =)
 struct Game {
-  bool Initialize(Program *program, Background *background);
-  void Shutdown();
-  void Render();
-  void Update(float dt);
-
-  Background *m_background;
-  Program *m_program;
+  virtual void Shutdown() = 0;
+  virtual void Render() = 0;
+  virtual void Update(float dt) = 0;
 };

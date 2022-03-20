@@ -1,4 +1,23 @@
-bool GLFWManager::Initialize(UINT width, UINT height, const char *title) {
+GLFWManager *GLFWManager::m_glfw_manager = nullptr;
+
+GLFWManager::GLFWManager() {
+  m_glfw_manager = this;
+}
+
+void FrameBufferSizeCallbackStatic(GLFWwindow *window, int width, int height) {
+  GLFWManager::m_glfw_manager->FrameBufferSizeCallback(window, width, height);
+}
+
+void GLFWManager::FrameBufferSizeCallback(GLFWwindow *window, int width, int height) {
+  m_projection =
+      glm::ortho(0.0f, static_cast<float>(width), 0.0f,
+                 static_cast<float>(height), -1000.0f, 1000.0f);
+
+  m_width = width;
+  m_height = height;
+}
+
+bool GLFWManager::Initialize(int width, int height, const char *title) {
   if (!glfwInit()) {
     LOG(LOG_ERROR, "GLFWManager", "%s", "Unable to initialize GLFW");
     return false;
@@ -16,6 +35,7 @@ bool GLFWManager::Initialize(UINT width, UINT height, const char *title) {
   }
 
   glfwMakeContextCurrent(m_window);
+  glfwSetFramebufferSizeCallback(m_window, FrameBufferSizeCallbackStatic);
   glfwSwapInterval(1);
 
   GLenum error = glewInit();
@@ -26,6 +46,9 @@ bool GLFWManager::Initialize(UINT width, UINT height, const char *title) {
 
   m_width = width;
   m_height = height;
+  m_projection =
+      glm::ortho(0.0f, static_cast<float>(width), 0.0f,
+                 static_cast<float>(height), -1000.0f, 1000.0f);
 
   return true;
 }

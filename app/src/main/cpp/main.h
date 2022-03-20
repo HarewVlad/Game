@@ -2,6 +2,8 @@
 #define STB_DS_IMPLEMENTATION
 #define GLEW_STATIC
 
+// TODO: Rethink place to zero-initialize members of structs
+
 #ifdef __ANDROID__
   #include <android/log.h>
   #include <android_native_app_glue.h>
@@ -23,6 +25,7 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "stb/stb_image.h"
 #include "stb/stb_ds.h"
+#include "time.h"
 #include "glm/glm.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
@@ -45,8 +48,13 @@ static bool Global_IsInitialized = false;
 #include "program.h"
 // #include "texture_manager.h"
 #include "texture.h"
+#include "input.h"
+#include "camera.h"
 #include "background.h"
 #include "game.h"
+// Include your game here
+#include "falling_creatures/falling_creatures.h"
+//
 #include "imgui_manager.h"
 #ifdef __ANDROID__
   #include "imgui_manager_android.h"
