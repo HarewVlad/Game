@@ -1,13 +1,14 @@
 bool Background::Initialize(GLFWManager *glfw_manager, Program *program, Camera *camera, Box *box, Texture *texture) {
+  m_box = box;
   m_glfw_manager = glfw_manager;
   m_program = program;
   m_texture = texture;
   m_camera = camera;
-  m_box = box;
 
   return true;
 }
 
+// TODO: Is it right to put this code here?
 void Background::Render() {
   m_program->Bind();
 
@@ -22,3 +23,4 @@ void Background::Render() {
 
   m_program->Unbind();
 }
+//

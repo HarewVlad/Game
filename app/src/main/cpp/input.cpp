@@ -25,3 +25,11 @@ void Input::Update() {
     }
   }
 }
+
+bool Input::GetKeyState(int key) {
+  if (hmgeti(m_key_state, key) >= 0) {
+    return hmget(m_key_state, key);
+  }
+  
+  return false;
+}

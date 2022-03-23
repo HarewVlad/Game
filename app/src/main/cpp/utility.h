@@ -1,4 +1,5 @@
 // TODO: Remove OpenGL from Utility
+// TOOD: Make like OpenGL, Android, Utility
 namespace Utility {
 namespace OpenGL {
 // #define ASSERT(x) if (!(x)) __debugbreak();
