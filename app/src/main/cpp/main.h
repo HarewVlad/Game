@@ -53,6 +53,7 @@ static bool Global_IsInitialized = false;
 #include "camera.h"
 #include "background.h"
 #include "game.h"
+#include "control.h"
 #include "entity_manager.h"
 // Include your game here
 #include "falling_creatures/player.h"

@@ -37,6 +37,7 @@
 #include "camera.cpp"
 #include "background.cpp"
 #include "game.cpp"
+#include "control.cpp"
 #include "entity_manager.cpp"
 // Include your game here
 #include "falling_creatures/player.cpp"
@@ -208,8 +209,11 @@ int main() {
   Player player;
   player.Initialize(&glfw_manager, &program, &camera, &player_box, &player_animation);
 
-  entity_manager.AddInput((int)EntityId::PLAYER, &player_box, &input);
-  entity_manager.AddAnimation((int)EntityId::PLAYER, &player_animation);
+  Control player_control;
+  player_control.Initialize(&player_box, &input);
+
+  entity_manager.AddAnimation(&player_animation);
+  entity_manager.AddControl(&player_control);
 
   FallingCreatures falling_creatures;
   falling_creatures.Initialize(&background, &player);
