@@ -13,7 +13,6 @@ void FallingCreatures::Render() {
 }
 
 void FallingCreatures::Update(float dt) {
-  m_player->Update(dt);
 }
 
 void FallingCreatures::Shutdown() {}

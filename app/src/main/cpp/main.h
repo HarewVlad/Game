@@ -4,9 +4,6 @@
 
 // TODO: Rethink place to zero-initialize members of structs
 
-// C++
-#include <chrono>
-
 #ifdef __ANDROID__
   #include <android/log.h>
   #include <android_native_app_glue.h>
@@ -56,6 +53,7 @@ static bool Global_IsInitialized = false;
 #include "camera.h"
 #include "background.h"
 #include "game.h"
+#include "entity_manager.h"
 // Include your game here
 #include "falling_creatures/player.h"
 #include "falling_creatures/falling_creatures.h"

@@ -37,6 +37,7 @@
 #include "camera.cpp"
 #include "background.cpp"
 #include "game.cpp"
+#include "entity_manager.cpp"
 // Include your game here
 #include "falling_creatures/player.cpp"
 #include "falling_creatures/falling_creatures.cpp"
@@ -141,6 +142,9 @@ int main() {
   int keys[] = {'W', 'A', 'S', 'D'};
   input.Add(&keys[0], sizeof(keys) / sizeof(int));
 
+  EntityManager entity_manager;
+  entity_manager.Initialize();
+
   IndexBuffer index_buffer;
   index_buffer.Initialize();
 
@@ -202,14 +206,17 @@ int main() {
   player_animation.Add(&player_textures[0], sizeof(player_textures) / sizeof(Texture));
 
   Player player;
-  player.Initialize(&glfw_manager, &program, &camera, &input, &player_box, &player_animation);
+  player.Initialize(&glfw_manager, &program, &camera, &player_box, &player_animation);
+
+  entity_manager.AddInput((int)EntityId::PLAYER, &player_box, &input);
+  entity_manager.AddAnimation((int)EntityId::PLAYER, &player_animation);
 
   FallingCreatures falling_creatures;
   falling_creatures.Initialize(&background, &player);
 
   Win32Manager win32_manager;
   {
-    win32_manager.Initialize(&glfw_manager, &imgui_manager_win32, &input, &camera, &falling_creatures);
+    win32_manager.Initialize(&glfw_manager, &imgui_manager_win32, &input, &camera, &falling_creatures, &entity_manager);
     win32_manager.Run();
   }
 
