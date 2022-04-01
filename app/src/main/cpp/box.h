@@ -9,5 +9,5 @@ struct Box {
   IndexBuffer *m_index_buffer;
   VertexArray *m_vertex_array;
   glm::vec2 m_position;
-  glm::mat4 m_model; // NOTE(Vlad): Do manipulations with box (rotate, scale, ...)
+  glm::mat4 m_model; // NOTE(Vlad): Do manipulations with box (rotate, scale, ...) // TODO: Move out from there to separate entity Position or something
 };

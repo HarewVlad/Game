@@ -51,13 +51,11 @@ static bool Global_IsInitialized = false;
 #include "animation.h"
 #include "input.h"
 #include "camera.h"
-#include "background.h"
 #include "game.h"
 #include "control.h"
+#include "renderer.h"
 #include "entity_manager.h"
-// Include your game here
-#include "falling_creatures/player.h"
-#include "falling_creatures/falling_creatures.h"
+// Include your game files here
 //
 #include "imgui_manager.h"
 #ifdef __ANDROID__

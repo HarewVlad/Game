@@ -1,7 +1,6 @@
 struct Control {
-  bool Initialize(Box *box, Input *input);
-  void Update(float dt);
-
-  Box *m_box;
+  bool Initialize(Input *input);
+  void Update(Box *box, float dt);
+  
   Input *m_input;
 };

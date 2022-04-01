@@ -1,7 +1,7 @@
 struct Win32Manager {
   bool Initialize(GLFWManager *glfw_manager,
                   ImGuiManagerWin32 *imgui_manager_win32, Input *input,
-                  Camera *camera, Game *game, EntityManager *entity_manager);
+                  Camera *camera, EntityManager *entity_manager);
   void Shutdown();
   void Run();
   void Render();
@@ -11,6 +11,5 @@ struct Win32Manager {
   ImGuiManagerWin32 *m_imgui_manager_win32;
   Input *m_input;
   Camera *m_camera;
-  Game *m_game; // NOTE(Vlad): Basically you place all you data in Game structure
   EntityManager *m_entity_manager;
 };

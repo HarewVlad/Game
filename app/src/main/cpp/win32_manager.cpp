@@ -1,12 +1,11 @@
 bool Win32Manager::Initialize(GLFWManager *glfw_manager,
                               ImGuiManagerWin32 *imgui_manager_win32,
-                              Input *input, Camera *camera, Game *game,
+                              Input *input, Camera *camera,
                               EntityManager *entity_manager) {
   m_glfw_manager = glfw_manager;
   m_imgui_manager_win32 = imgui_manager_win32;
   m_input = input;
   m_camera = camera;
-  m_game = game;
   m_entity_manager = entity_manager;
 
   return true;
@@ -36,7 +35,7 @@ void Win32Manager::Render() {
 
   glViewport(0, 0, m_glfw_manager->m_width, m_glfw_manager->m_height);
 
-  m_game->Render();
+  m_entity_manager->Render();
   m_imgui_manager_win32
       ->RenderBegin(); // NOTE(Vlad): This part may be specifi to OS
   m_imgui_manager_win32->Render();
@@ -44,8 +43,6 @@ void Win32Manager::Render() {
 
 void Win32Manager::Update(float dt) {
   m_input->Update();
-  m_camera->Update(dt);
-  m_game->Update(dt);
   m_entity_manager->Update(dt);
 }
 

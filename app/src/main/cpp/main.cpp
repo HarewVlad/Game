@@ -35,13 +35,11 @@
 #include "animation.cpp"
 #include "input.cpp"
 #include "camera.cpp"
-#include "background.cpp"
 #include "game.cpp"
 #include "control.cpp"
+#include "renderer.cpp"
 #include "entity_manager.cpp"
-// Include your game here
-#include "falling_creatures/player.cpp"
-#include "falling_creatures/falling_creatures.cpp"
+// Include your game files here
 //
 #include "imgui_manager.cpp"
 
@@ -174,9 +172,6 @@ int main() {
   Texture background_texture;
   background_texture.Initialize("..\\assets\\background.png");
 
-  Background background;
-  background.Initialize(&glfw_manager, &program, &camera, &background_box, &background_texture);
-  
   Box player_box;
   VertexArray player_vertex_array;
   {
@@ -206,21 +201,30 @@ int main() {
   player_animation.Initialize();
   player_animation.Add(&player_textures[0], sizeof(player_textures) / sizeof(Texture));
 
-  Player player;
-  player.Initialize(&glfw_manager, &program, &camera, &player_box, &player_animation);
+  Control control; // NOTE(Vlad): It's player control only
+  control.Initialize(&input);
 
-  Control player_control;
-  player_control.Initialize(&player_box, &input);
+  Renderer renderer;
+  renderer.Initialize(&glfw_manager);
 
-  entity_manager.AddAnimation(&player_animation);
-  entity_manager.AddControl(&player_control);
+  // Player
+  entity_manager.AddBox(Entity::PLAYER, &player_box);
+  entity_manager.AddAnimation(Entity::PLAYER, &player_animation);
+  entity_manager.AddControl(Entity::PLAYER, &control);
+  entity_manager.AddCamera(Entity::PLAYER, &camera);
+  entity_manager.AddRenderer(Entity::PLAYER, &renderer);
+  entity_manager.AddProgram(Entity::PLAYER, &program);
 
-  FallingCreatures falling_creatures;
-  falling_creatures.Initialize(&background, &player);
+  // Background
+  entity_manager.AddBox(Entity::BACKGROUND, &background_box);
+  entity_manager.AddTexture(Entity::BACKGROUND, &background_texture);
+  entity_manager.AddRenderer(Entity::BACKGROUND, &renderer);
+  entity_manager.AddProgram(Entity::BACKGROUND, &program);
+  entity_manager.AddCamera(Entity::BACKGROUND, &camera);
 
   Win32Manager win32_manager;
   {
-    win32_manager.Initialize(&glfw_manager, &imgui_manager_win32, &input, &camera, &falling_creatures, &entity_manager);
+    win32_manager.Initialize(&glfw_manager, &imgui_manager_win32, &input, &camera, &entity_manager);
     win32_manager.Run();
   }
 
