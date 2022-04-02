@@ -14,3 +14,8 @@ struct Texture {
   int m_height;
   int m_bpp;
 };
+
+struct TextureMap {
+  int key;
+  Texture *value;
+};

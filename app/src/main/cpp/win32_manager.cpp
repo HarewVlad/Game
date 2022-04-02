@@ -1,10 +1,9 @@
 bool Win32Manager::Initialize(GLFWManager *glfw_manager,
                               ImGuiManagerWin32 *imgui_manager_win32,
-                              Input *input, Camera *camera,
+                              Camera *camera,
                               EntityManager *entity_manager) {
   m_glfw_manager = glfw_manager;
   m_imgui_manager_win32 = imgui_manager_win32;
-  m_input = input;
   m_camera = camera;
   m_entity_manager = entity_manager;
 
@@ -23,6 +22,8 @@ void Win32Manager::Run() {
 
     glfwSwapBuffers(m_glfw_manager->m_window);
     glfwPollEvents();
+
+    // Sleep(50);
   }
 }
 
@@ -42,7 +43,6 @@ void Win32Manager::Render() {
 }
 
 void Win32Manager::Update(float dt) {
-  m_input->Update();
   m_entity_manager->Update(dt);
 }
 

@@ -1,6 +1,11 @@
 struct Control {
-  bool Initialize(Input *input);
-  void Update(Box *box, float dt);
-  
-  Input *m_input;
+  bool Initialize(GLFWManager *glfw_manager); // TODO: Need to actually create InputManager ... because for android it is different
+  void Update(Movement *movement, float dt);
+
+  GLFWManager *m_glfw_manager;
+};
+
+struct ControlMap {
+  int key;
+  Control *value;
 };

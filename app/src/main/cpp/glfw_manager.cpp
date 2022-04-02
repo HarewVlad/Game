@@ -17,6 +17,23 @@ void GLFWManager::FrameBufferSizeCallback(GLFWwindow *window, int width, int hei
   m_height = height;
 }
 
+void KeyCallbackStatic(GLFWwindow *window, int key, int scancode, int action, int mods) {
+  GLFWManager::m_glfw_manager->KeyCallback(window, key, scancode, action, mods);
+}
+
+void GLFWManager::KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+  switch (action) {
+    case GLFW_PRESS:
+      hmput(m_key_state, key, true);
+      break;
+    case GLFW_RELEASE:
+      hmput(m_key_state, key, false);
+      break;
+    default:
+      break;
+  }
+}
+
 bool GLFWManager::Initialize(int width, int height, const char *title) {
   if (!glfwInit()) {
     LOG(LOG_ERROR, "GLFWManager", "%s", "Unable to initialize GLFW");
@@ -36,7 +53,8 @@ bool GLFWManager::Initialize(int width, int height, const char *title) {
 
   glfwMakeContextCurrent(m_window);
   glfwSetFramebufferSizeCallback(m_window, FrameBufferSizeCallbackStatic);
-  // glfwSwapInterval(1); // NOTE(Vlad): When setuped causes lag on mouse move or any input
+  glfwSetKeyCallback(m_window, KeyCallbackStatic);
+  glfwSwapInterval(1); // NOTE(Vlad): When setuped causes lag on mouse move or any input?
 
   GLenum error = glewInit();
   if (error != GLEW_OK) {
@@ -49,6 +67,7 @@ bool GLFWManager::Initialize(int width, int height, const char *title) {
   m_projection =
       glm::ortho(0.0f, static_cast<float>(width), 0.0f,
                  static_cast<float>(height), -1000.0f, 1000.0f);
+  m_key_state = NULL;
 
   return true;
 }
@@ -56,4 +75,8 @@ bool GLFWManager::Initialize(int width, int height, const char *title) {
 void GLFWManager::Shutdown() {
   glfwDestroyWindow(m_window);
   glfwTerminate();
+}
+
+bool GLFWManager::IsKeyPressed(int key) {
+  return hmget(m_key_state, key);
 }

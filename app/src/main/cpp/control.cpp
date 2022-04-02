@@ -1,13 +1,16 @@
-bool Control::Initialize(Input *input) {
-  m_input = input;
+bool Control::Initialize(GLFWManager *glfw_manager) {
+  m_glfw_manager = glfw_manager;
 
   return true;
 }
 
-void Control::Update(Box *box, float dt) {
-  if (m_input->GetKeyState('A')) {
-    box->m_position.x -= 1;
-  } else if (m_input->GetKeyState('D')) {
-    box->m_position.x += 1;
+// TODO: Make callback to define custom controls for something later ...
+void Control::Update(Movement *movement, float dt) {
+  if (m_glfw_manager->IsKeyPressed(GLFW_KEY_A)) {
+    movement->m_velocity.x += 50;
+  } else if (m_glfw_manager->IsKeyPressed(GLFW_KEY_D)) {
+    movement->m_velocity.x -= 50;
+  } else if (m_glfw_manager->IsKeyPressed(GLFW_KEY_W)) {
+  } else if (m_glfw_manager->IsKeyPressed(GLFW_KEY_S)) {
   }
 }

@@ -8,3 +8,8 @@ struct Animation {
   int m_index;
   float m_time;
 };
+
+struct AnimationMap {
+  int key;
+  Animation *value;
+};

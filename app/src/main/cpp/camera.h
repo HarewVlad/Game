@@ -8,3 +8,8 @@ struct Camera {
   glm::vec2 m_position;
   glm::vec2 m_target;
 };
+
+struct CameraMap {
+  int key;
+  Camera *value;
+};

@@ -4,6 +4,10 @@
 
 // TODO: Rethink place to zero-initialize members of structs
 
+// C++
+#include <iostream>
+///
+
 #ifdef __ANDROID__
   #include <android/log.h>
   #include <android_native_app_glue.h>
@@ -31,6 +35,7 @@
 #include "glm/ext/matrix_clip_space.hpp"
 
 static bool Global_IsInitialized = false;
+static const glm::mat4 Global_Identity = glm::mat4(1.0f);
 
 #include "log.h"
 #include "utility.h"
@@ -49,7 +54,8 @@ static bool Global_IsInitialized = false;
 // #include "texture_manager.h" // NOTE(Vlad): Still need to think about it
 #include "texture.h"
 #include "animation.h"
-#include "input.h"
+#include "position.h"
+#include "movement.h"
 #include "camera.h"
 #include "game.h"
 #include "control.h"

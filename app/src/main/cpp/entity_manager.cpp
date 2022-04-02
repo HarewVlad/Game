@@ -1,5 +1,6 @@
 // TODO: Change structure to DOTS ECS later someday may be
 // TODO: Add warnings when Texture and Animation bound at the same time (Static vs. Dynamic)
+// TODO: Check whether component present or not
 
 bool EntityManager::Initialize() {
   m_controls = NULL;
@@ -9,43 +10,59 @@ bool EntityManager::Initialize() {
   m_renderers = NULL;
   m_programs = NULL;
   m_textures = NULL;
+  m_positions = NULL;
+  m_movements = NULL;
   
   return true;
 }
 
-void EntityManager::AddRenderer(Entity id, Renderer *renderer) {
+void EntityManager::AddRenderer(int id, Renderer *renderer) {
   hmput(m_renderers, id, renderer);
 }
 
-void EntityManager::AddAnimation(Entity id, Animation *animation) {
+void EntityManager::AddAnimation(int id, Animation *animation) {
   hmput(m_animations, id, animation);
 }
 
-void EntityManager::AddControl(Entity id, Control *control) {
+void EntityManager::AddControl(int id, Control *control) {
   hmput(m_controls, id, control);
 }
 
-void EntityManager::AddCamera(Entity id, Camera *camera) {
+void EntityManager::AddCamera(int id, Camera *camera) {
   hmput(m_cameras, id, camera);
 }
 
-void EntityManager::AddBox(Entity id, Box *box) {
+void EntityManager::AddBox(int id, Box *box) {
   hmput(m_boxes, id, box);
 }
 
-void EntityManager::AddProgram(Entity id, Program *program) {
+void EntityManager::AddProgram(int id, Program *program) {
   hmput(m_programs, id, program);
 }
 
-void EntityManager::AddTexture(Entity id, Texture *texture) {
+void EntityManager::AddTexture(int id, Texture *texture) {
   hmput(m_textures, id, texture);
 }
 
-void EntityManager::Update(float dt) {
-  for (int i = 0; i < hmlen(m_controls); ++i) {
-    Box *box = hmget(m_boxes, i); // NOTE(Vlad): Check whether box present or not
+void EntityManager::AddPosition(int id, Position *position) {
+  hmput(m_positions, id, position);
+}
 
-    m_controls[i].value->Update(box, dt);
+void EntityManager::AddMovement(int id, Movement *movement) {
+  hmput(m_movements, id, movement);
+}
+
+void EntityManager::Update(float dt) {
+  for (int i = 0; i < hmlen(m_movements); ++i) {
+    Position *position = hmget(m_positions, i);
+
+    m_movements[i].value->Update(position, dt);
+  }
+
+  for (int i = 0; i < hmlen(m_controls); ++i) {
+    Movement *movement = hmget(m_movements, m_controls[i].key);
+
+    m_controls[i].value->Update(movement, dt);
   }
 
   for (int i = 0; i < hmlen(m_cameras); ++i) {
@@ -60,13 +77,14 @@ void EntityManager::Update(float dt) {
 void EntityManager::Render() {
   for (int i = 0; i < hmlen(m_renderers); ++i) {
     Box *box = hmget(m_boxes, i);
+    Position *position = hmget(m_positions, i);
     Animation *animation = hmget(m_animations, i);
     Renderer *renderer = hmget(m_renderers, i);
     Camera *camera = hmget(m_cameras, i);
     Program *program = hmget(m_programs, i);
     Texture *texture = hmget(m_textures, i);
 
-    renderer->RenderBoxBegin(box, camera, program);
+    renderer->RenderBoxBegin(position, camera, program);
 
     if (animation) { // TODO: Use bit flags for this
       program->SetUniform1i("u_Texture", 0);
