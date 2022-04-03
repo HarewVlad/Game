@@ -1,6 +1,5 @@
-// TODO: Change structure to DOTS ECS later someday may be
 // TODO: Add warnings when Texture and Animation bound at the same time (Static vs. Dynamic)
-// TODO: Check whether component present or not
+// TODO: What if two Entities have the same Physics component, why need to store it twice? Fix it dude
 
 bool EntityManager::Initialize() {
   m_controls = NULL;
@@ -12,6 +11,7 @@ bool EntityManager::Initialize() {
   m_textures = NULL;
   m_positions = NULL;
   m_movements = NULL;
+  m_physics = NULL;
   
   return true;
 }
@@ -52,11 +52,16 @@ void EntityManager::AddMovement(int id, Movement *movement) {
   hmput(m_movements, id, movement);
 }
 
-void EntityManager::Update(float dt) {
-  for (int i = 0; i < hmlen(m_movements); ++i) {
-    Position *position = hmget(m_positions, i);
+void EntityManager::AddPhysics(int id, Physics *physics) {
+  hmput(m_physics, id, physics);
+}
 
-    m_movements[i].value->Update(position, dt);
+void EntityManager::Update(float dt) {
+  for (int i = 0; i < hmlen(m_physics); ++i) {
+    Position *position = hmget(m_positions, m_physics[i].key);
+    Movement *movement = hmget(m_movements, m_physics[i].key);
+
+    m_physics[i].value->Update(position, movement, dt);
   }
 
   for (int i = 0; i < hmlen(m_controls); ++i) {

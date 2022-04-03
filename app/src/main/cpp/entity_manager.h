@@ -9,6 +9,8 @@ struct EntityManager {
   void AddTexture(int id, Texture *texture);
   void AddPosition(int id, Position *position);
   void AddMovement(int id, Movement *movement);
+  void AddPhysics(int id, Physics *physics);
+  
   void Update(float dt);
   void Render();
 
@@ -21,4 +23,5 @@ struct EntityManager {
   TextureMap *m_textures;
   PositionMap *m_positions;
   MovementMap *m_movements;
+  PhysicsMap *m_physics;
 };

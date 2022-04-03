@@ -30,7 +30,6 @@
 
 #include "shader.cpp"
 #include "program.cpp"
-// #include "texture_manager.cpp"
 #include "texture.cpp"
 #include "animation.cpp"
 #include "position.cpp"
@@ -39,6 +38,7 @@
 #include "game.cpp"
 #include "control.cpp"
 #include "renderer.cpp"
+#include "physics.cpp"
 #include "entity_manager.cpp"
 // Include your game files here
 //
@@ -211,6 +211,9 @@ int main() {
   Movement player_movement;
   player_movement.Initialize({10, 0}, {10, 0}, 0.1f);
 
+  Physics physics;
+  physics.Initialize();
+
   // Background
   entity_manager.AddBox(0, &background_box);
   entity_manager.AddTexture(0, &background_texture);
@@ -228,6 +231,7 @@ int main() {
   entity_manager.AddProgram(1, &program);
   entity_manager.AddPosition(1, &player_position);
   entity_manager.AddMovement(1, &player_movement);
+  entity_manager.AddPhysics(1, &physics);
 
   Win32Manager win32_manager;
   {

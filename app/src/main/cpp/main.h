@@ -60,6 +60,7 @@ static const glm::mat4 Global_Identity = glm::mat4(1.0f);
 #include "game.h"
 #include "control.h"
 #include "renderer.h"
+#include "physics.h"
 #include "entity_manager.h"
 // Include your game files here
 //
