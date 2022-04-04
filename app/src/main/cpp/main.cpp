@@ -28,22 +28,21 @@
   #include "glfw_manager.cpp"
 #endif
 
+#include "state.cpp"
 #include "shader.cpp"
 #include "program.cpp"
 #include "texture.cpp"
 #include "animation.cpp"
 #include "position.cpp"
+#include "aabb.cpp"
 #include "movement.cpp"
 #include "camera.cpp"
-#include "game.cpp"
 #include "control.cpp"
-#include "renderer.cpp"
-#include "physics.cpp"
+#include "renderer_system.cpp"
+#include "collision_system.cpp"
+#include "physics_system.cpp"
 #include "entity_manager.cpp"
-// Include your game files here
-//
 #include "imgui_manager.cpp"
-
 #ifdef __ANDROID__
   #include "imgui_manager_android.cpp"
 #elif defined _WIN32
@@ -139,9 +138,6 @@ int main() {
   Camera camera;
   camera.Initialize();
 
-  EntityManager entity_manager;
-  entity_manager.Initialize();
-
   IndexBuffer index_buffer;
   index_buffer.Initialize();
 
@@ -150,11 +146,11 @@ int main() {
 
   Box background_box;
   VertexArray background_vertex_array;
+  float background_width = glfw_manager.m_width / 2;
+  float background_height = glfw_manager.m_height / 2;
   {
-    int width = glfw_manager.m_width / 2;
-    int height = glfw_manager.m_height / 2;
     VertexBuffer vertex_buffer;
-    vertex_buffer.Initialize(width, height);
+    vertex_buffer.Initialize(background_width, background_height);
 
     // Vertex buffer layout
     vertex_buffer_layout.Push(GL_FLOAT, 2);
@@ -180,11 +176,11 @@ int main() {
 
   Box player_box;
   VertexArray player_vertex_array;
+  float player_width = player_textures[0].m_width;
+  float player_height = player_textures[0].m_height;
   {
-    int width = player_textures[0].m_width;
-    int height = player_textures[0].m_height;
     VertexBuffer vertex_buffer;
-    vertex_buffer.Initialize(width, height);
+    vertex_buffer.Initialize(player_width, player_height);
 
     player_vertex_array.Initialize();
     player_vertex_array.AddBuffer(&vertex_buffer, &vertex_buffer_layout);
@@ -199,39 +195,91 @@ int main() {
   Control control;
   control.Initialize(&glfw_manager);
 
-  Renderer renderer;
-  renderer.Initialize(&glfw_manager);
-
   Position background_position;
-  background_position.Initialize({glfw_manager.m_width / 2, glfw_manager.m_height / 2});
+  background_position.Initialize({background_width, background_height});
 
   Position player_position;
-  player_position.Initialize({100, 100});
+  player_position.Initialize({600, 300});
 
   Movement player_movement;
-  player_movement.Initialize({10, 0}, {10, 0}, 0.1f);
+  player_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0.1f);
 
-  Physics physics;
-  physics.Initialize();
+  // Systems
+  RendererSystem renderer_system;
+  renderer_system.Initialize(&glfw_manager);
+
+  PhysicsSystem physics_system;
+  physics_system.Initialize({0, -4.8f});
+
+  CollisionSystem collision_system;
+  collision_system.Initialize();
+  //
+
+  enum PlayerState {
+    IDLE, RUN
+  };
+
+  State player_state;
+
+  AABB player_aabb;
+  player_aabb.Initialize(&player_position, {player_width, player_height});
+
+  EntityManager entity_manager;
+  entity_manager.Initialize(&renderer_system, &physics_system, &collision_system);
 
   // Background
   entity_manager.AddBox(0, &background_box);
   entity_manager.AddTexture(0, &background_texture);
-  entity_manager.AddRenderer(0, &renderer);
   entity_manager.AddProgram(0, &program);
   entity_manager.AddCamera(0, &camera);
   entity_manager.AddPosition(0, &background_position);
+  entity_manager.AddToRenderer(0);
 
   // Player
   entity_manager.AddBox(1, &player_box);
   entity_manager.AddAnimation(1, &player_animation);
   entity_manager.AddControl(1, &control);
   entity_manager.AddCamera(1, &camera);
-  entity_manager.AddRenderer(1, &renderer);
   entity_manager.AddProgram(1, &program);
   entity_manager.AddPosition(1, &player_position);
   entity_manager.AddMovement(1, &player_movement);
-  entity_manager.AddPhysics(1, &physics);
+  entity_manager.AddAABB(1, &player_aabb);
+  entity_manager.AddToPhysics(1);
+  entity_manager.AddToRenderer(1);
+  entity_manager.AddToCollision(1);
+
+  // Ground
+  Texture ground_texture;
+  ground_texture.Initialize("..\\assets\\ground.png");
+
+  Box ground_box;
+  VertexArray ground_vertex_array;
+  float ground_width = ground_texture.m_width;
+  float ground_height = ground_texture.m_height;
+  {
+    VertexBuffer vertex_buffer;
+    vertex_buffer.Initialize(ground_width, ground_height);
+
+    ground_vertex_array.Initialize();
+    ground_vertex_array.AddBuffer(&vertex_buffer, &vertex_buffer_layout);
+
+    ground_box.Initialize(&index_buffer, &ground_vertex_array);
+  }
+
+  Position ground_position;
+  ground_position.Initialize({300, 200});
+
+  AABB ground_aabb;
+  ground_aabb.Initialize(&ground_position, {ground_width, ground_height});
+
+  entity_manager.AddBox(2, &ground_box);
+  entity_manager.AddTexture(2, &ground_texture);
+  entity_manager.AddProgram(2, &program);
+  entity_manager.AddCamera(2, &camera);
+  entity_manager.AddPosition(2, &ground_position);
+  entity_manager.AddAABB(2, &ground_aabb);
+  entity_manager.AddToRenderer(2);
+  entity_manager.AddToCollision(2);
 
   Win32Manager win32_manager;
   {

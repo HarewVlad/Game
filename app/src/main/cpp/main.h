@@ -51,19 +51,18 @@ static const glm::mat4 Global_Identity = glm::mat4(1.0f);
 #include "box.h"
 #include "shader.h"
 #include "program.h"
-// #include "texture_manager.h" // NOTE(Vlad): Still need to think about it
 #include "texture.h"
 #include "animation.h"
 #include "position.h"
+#include "aabb.h"
 #include "movement.h"
+#include "state.h"
 #include "camera.h"
-#include "game.h"
 #include "control.h"
-#include "renderer.h"
-#include "physics.h"
+#include "renderer_system.h"
+#include "collision_system.h"
+#include "physics_system.h"
 #include "entity_manager.h"
-// Include your game files here
-//
 #include "imgui_manager.h"
 #ifdef __ANDROID__
   #include "imgui_manager_android.h"

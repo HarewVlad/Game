@@ -1,23 +1,27 @@
-// TODO: Add warnings when Texture and Animation bound at the same time (Static vs. Dynamic)
-// TODO: What if two Entities have the same Physics component, why need to store it twice? Fix it dude
+// TODO: Add warnings when Texture and Animation bound at the same time (Static
+// vs. Dynamic)
+// TODO: What if two Entities have the same Physics component, why need to store
+// it twice? Fix it dude
 
-bool EntityManager::Initialize() {
+bool EntityManager::Initialize(RendererSystem *renderer_system,
+                               PhysicsSystem *physics_system, CollisionSystem *collision_system) {
   m_controls = NULL;
   m_animations = NULL;
   m_cameras = NULL;
   m_boxes = NULL;
-  m_renderers = NULL;
   m_programs = NULL;
   m_textures = NULL;
   m_positions = NULL;
   m_movements = NULL;
-  m_physics = NULL;
-  
-  return true;
-}
+  m_aabbs = NULL;
+  m_physics_system = physics_system;
+  m_physics_system_ids = NULL;
+  m_renderer_system = renderer_system;
+  m_renderer_system_ids = NULL;
+  m_collision_system = collision_system;
+  m_collision_system_ids = NULL;
 
-void EntityManager::AddRenderer(int id, Renderer *renderer) {
-  hmput(m_renderers, id, renderer);
+  return true;
 }
 
 void EntityManager::AddAnimation(int id, Animation *animation) {
@@ -32,9 +36,7 @@ void EntityManager::AddCamera(int id, Camera *camera) {
   hmput(m_cameras, id, camera);
 }
 
-void EntityManager::AddBox(int id, Box *box) {
-  hmput(m_boxes, id, box);
-}
+void EntityManager::AddBox(int id, Box *box) { hmput(m_boxes, id, box); }
 
 void EntityManager::AddProgram(int id, Program *program) {
   hmput(m_programs, id, program);
@@ -52,16 +54,40 @@ void EntityManager::AddMovement(int id, Movement *movement) {
   hmput(m_movements, id, movement);
 }
 
-void EntityManager::AddPhysics(int id, Physics *physics) {
-  hmput(m_physics, id, physics);
+void EntityManager::AddState(int id, State *state) {
+  hmput(m_states, id, state);
 }
 
-void EntityManager::Update(float dt) {
-  for (int i = 0; i < hmlen(m_physics); ++i) {
-    Position *position = hmget(m_positions, m_physics[i].key);
-    Movement *movement = hmget(m_movements, m_physics[i].key);
+void EntityManager::AddAABB(int id, AABB *aabb) {
+  hmput(m_aabbs, id, aabb);
+}
 
-    m_physics[i].value->Update(position, movement, dt);
+void EntityManager::AddToPhysics(int id) { arrput(m_physics_system_ids, id); }
+
+void EntityManager::AddToRenderer(int id) { arrput(m_renderer_system_ids, id); }
+
+void EntityManager::AddToCollision(int id) { arrput(m_collision_system_ids, id); }
+
+void EntityManager::Update(float dt) {
+  for (int i = 0; i < arrlen(m_physics_system_ids); ++i) {
+    Movement *movement = hmget(m_movements, m_physics_system_ids[i]);
+
+    m_physics_system->Update(movement, dt);
+  }
+
+  for (int i = 0; i < hmlen(m_movements); ++i) {
+    Position *position = hmget(m_positions, m_movements[i].key);
+
+    m_movements[i].value->Update(position, dt);
+  }
+
+  for (int i = 0; i < arrlen(m_collision_system_ids); ++i) {
+    for (int j = i + 1; j < arrlen(m_collision_system_ids); ++j) {
+      AABB *a = hmget(m_aabbs, m_collision_system_ids[i]);
+      AABB *b = hmget(m_aabbs, m_collision_system_ids[j]);
+
+      m_collision_system->Update(a, b, dt);
+    }
   }
 
   for (int i = 0; i < hmlen(m_controls); ++i) {
@@ -80,16 +106,17 @@ void EntityManager::Update(float dt) {
 }
 
 void EntityManager::Render() {
-  for (int i = 0; i < hmlen(m_renderers); ++i) {
-    Box *box = hmget(m_boxes, i);
-    Position *position = hmget(m_positions, i);
-    Animation *animation = hmget(m_animations, i);
-    Renderer *renderer = hmget(m_renderers, i);
-    Camera *camera = hmget(m_cameras, i);
-    Program *program = hmget(m_programs, i);
-    Texture *texture = hmget(m_textures, i);
+  for (int i = 0; i < arrlen(m_renderer_system_ids); ++i) {
+    int id = m_renderer_system_ids[i];
 
-    renderer->RenderBoxBegin(position, camera, program);
+    Box *box = hmget(m_boxes, id);
+    Position *position = hmget(m_positions, id);
+    Animation *animation = hmget(m_animations, id);
+    Camera *camera = hmget(m_cameras, id);
+    Program *program = hmget(m_programs, id);
+    Texture *texture = hmget(m_textures, id);
+
+    m_renderer_system->RenderBoxBegin(position, camera, program);
 
     if (animation) { // TODO: Use bit flags for this
       program->SetUniform1i("u_Texture", 0);
@@ -109,6 +136,6 @@ void EntityManager::Render() {
       texture->Unbind();
     }
 
-    renderer->RenderBoxEnd(program);
+    m_renderer_system->RenderBoxEnd(program);
   }
 }
