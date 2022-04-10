@@ -1,10 +1,12 @@
 struct Animation {
   bool Initialize();
-  void Add(Texture *textures, int size);
+  void Add(int id, Texture *textures);
   void Update(float dt);
   Texture *GetCurrentTexture();
+  void SetId(int id);
 
-  Texture *m_textures;
+  TextureMap *m_textures;
+  int m_id;
   int m_index;
   float m_time;
 };
