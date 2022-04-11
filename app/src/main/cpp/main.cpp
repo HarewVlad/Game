@@ -34,6 +34,7 @@
 #include "texture.cpp"
 #include "animation.cpp"
 #include "position.cpp"
+#include "follow_system.cpp"
 #include "body.cpp"
 #include "movement.cpp"
 #include "camera_system.cpp"
@@ -136,8 +137,8 @@ int main() {
 
   Box background_box;
   VertexArray background_vertex_array;
-  float background_width = glfw_manager.m_width / 2;
-  float background_height = glfw_manager.m_height / 2;
+  float background_width = glfw_manager.m_width;
+  float background_height = glfw_manager.m_height;
   {
     VertexBuffer vertex_buffer;
     vertex_buffer.Initialize(background_width, background_height);
@@ -192,20 +193,23 @@ int main() {
   }
 
   Control control;
-  control.Initialize(&glfw_manager);
+  control.Initialize(&glfw_manager, 200.0f);
 
   Position background_position;
-  background_position.Initialize({background_width, background_height});
+  background_position.Initialize({0, 0});
 
   Position player_position;
   player_position.Initialize({600, 300});
 
   Movement player_movement;
-  player_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0.1f);
+  player_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
+
+  Position camera_position;
+  camera_position.Initialize({0, 0});
 
   // Systems
   CameraSystem camera_system;
-  camera_system.Initialize(&glfw_manager);
+  camera_system.Initialize(&glfw_manager, &camera_position);
 
   RendererSystem renderer_system;
   renderer_system.Initialize(&glfw_manager);
@@ -215,6 +219,9 @@ int main() {
 
   CollisionSystem collision_system;
   collision_system.Initialize();
+
+  FollowSystem follow_system;
+  follow_system.Initialize(&glfw_manager);
   //
 
   enum PlayerState {
@@ -227,7 +234,7 @@ int main() {
   player_body.Initialize(&player_position, {player_width, player_height});
 
   EntityManager entity_manager;
-  entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system);
+  entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system);
 
   // Background
   entity_manager.AddBox(0, &background_box);
@@ -280,6 +287,9 @@ int main() {
   entity_manager.AddToRenderer(2);
   entity_manager.AddToCollision(2);
   entity_manager.SetToCamera(2);
+
+  // Follow
+  entity_manager.AddToFollow(0, 2);
 
   Win32Manager win32_manager;
   {

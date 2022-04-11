@@ -1,10 +1,8 @@
 // TODO: Add warnings when Texture and Animation bound at the same time (Static
 // vs. Dynamic)
-// TODO: What if two Entities have the same Physics component, why need to store
-// it twice? Fix it dude
 
 bool EntityManager::Initialize(CameraSystem *camera_system, RendererSystem *renderer_system,
-                               PhysicsSystem *physics_system, CollisionSystem *collision_system) {
+                               PhysicsSystem *physics_system, CollisionSystem *collision_system, FollowSystem *follow_system) {
   m_controls = NULL;
   m_animations = NULL;
   m_boxes = NULL;
@@ -21,6 +19,8 @@ bool EntityManager::Initialize(CameraSystem *camera_system, RendererSystem *rend
   m_collision_system_ids = NULL;
   m_camera_system = camera_system;
   m_camera_system_id = -1;
+  m_follow_system = follow_system;
+  m_follow_map = NULL;
 
   return true;
 }
@@ -69,6 +69,10 @@ void EntityManager::AddToRenderer(int id) { arrput(m_renderer_system_ids, id); }
 
 void EntityManager::AddToCollision(int id) { arrput(m_collision_system_ids, id); }
 
+void EntityManager::AddToFollow(int a, int b) {
+  hmput(m_follow_map, a, b);
+}
+
 void EntityManager::Update(float dt) {
   for (int i = 0; i < hmlen(m_bodies); ++i) {
     Position *position = hmget(m_positions, m_bodies[i].key);
@@ -106,10 +110,19 @@ void EntityManager::Update(float dt) {
     m_controls[i].value->Update(movement, animation, dt); // TODO: Rethink where need to change animation ids
   }
 
-  if (m_camera_system_id != -1) {
-    Position *position = hmget(m_positions, m_camera_system_id);
+  for (int i = 0; i < hmlen(m_follow_map); ++i) {
+    Position *a = hmget(m_positions, m_follow_map[i].key);
+    Position *b = hmget(m_positions, m_follow_map[i].value);
 
-    m_camera_system->Follow(position);
+    m_follow_system->Update(a, b);
+  }
+
+  if (m_camera_system_id != -1) {
+    Position *a = m_camera_system->m_position;
+    Position *b = hmget(m_positions, m_camera_system_id);
+
+    m_follow_system->Update(a, b);
+    // m_camera_system->Follow(b); // NOTE(Vlad): Should we just use this method instead of above?
   }
 
   for (int i = 0; i < hmlen(m_animations); ++i) {

@@ -7,8 +7,11 @@ bool Movement::Initialize(const glm::vec2 &velocity, const glm::vec2 &accelerati
   return true;
 }
 
+// TODO: Redo movement and other physics based on BOX2D-lite
 void Movement::Update(Position *position, float dt) {
-  position->m_position += m_velocity * dt + m_acceleration * dt * dt * 0.5f;
-  m_velocity += m_acceleration * dt;
+  // position->m_position += m_velocity * dt + m_acceleration * dt * dt * 0.5f;
+  // m_velocity += m_acceleration * dt;
+  // m_velocity *= powf(m_damping, dt);
+  position->m_position += m_velocity * dt;
   m_velocity *= powf(m_damping, dt);
 }

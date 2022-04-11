@@ -1,5 +1,5 @@
 struct EntityManager {
-  bool Initialize(CameraSystem *camera_system, RendererSystem *renderer_system, PhysicsSystem *physics_system, CollisionSystem *collision_system);
+  bool Initialize(CameraSystem *camera_system, RendererSystem *renderer_system, PhysicsSystem *physics_system, CollisionSystem *collision_system, FollowSystem *follow_system);
   void AddControl(int id, Control *control);
   void AddAnimation(int id, Animation *animation);
   void AddBox(int id, Box *box);
@@ -14,6 +14,7 @@ struct EntityManager {
   void AddToRenderer(int id);
   void AddToCollision(int id);
   void SetToCamera(int id);
+  void AddToFollow(int a, int b); // NOTE(Vlad): 1 object follows the center of the other object
 
   void Update(float dt);
   void Render();
@@ -41,4 +42,7 @@ struct EntityManager {
 
   CameraSystem *m_camera_system;
   int m_camera_system_id; // NOTE(Vlad): Only one entity can use camera
+
+  FollowSystem *m_follow_system;
+  FollowMap *m_follow_map;
 };

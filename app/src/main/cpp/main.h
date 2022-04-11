@@ -6,6 +6,7 @@
 
 // C++
 #include <iostream>
+#include <functional>
 ///
 
 #ifdef __ANDROID__
@@ -54,6 +55,7 @@ static const glm::mat4 Global_Identity = glm::mat4(1.0f);
 #include "texture.h"
 #include "animation.h"
 #include "position.h"
+#include "follow_system.h"
 #include "body.h"
 #include "movement.h"
 #include "state.h"
