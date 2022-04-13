@@ -1,8 +1,6 @@
-bool VertexBufferLayout::Initialize() {
+void VertexBufferLayout::Initialize() {
   m_elements = NULL;
   m_stride = 0;
-
-  return true;
 }
 
 void VertexBufferLayout::Push(unsigned int type, unsigned int count, unsigned char normilized) {

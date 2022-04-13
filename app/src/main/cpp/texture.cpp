@@ -1,3 +1,4 @@
+// TODO: Remove returns and place asserts
 bool Texture::Initialize(void *data, int length) {
   stbi_set_flip_vertically_on_load(1);
 
@@ -14,6 +15,7 @@ bool Texture::Initialize(void *data, int length) {
   return true;
 }
 
+// TODO: Remove returns and place asserts
 bool Texture::Initialize(const char *filename) {
   stbi_set_flip_vertically_on_load(1);
 

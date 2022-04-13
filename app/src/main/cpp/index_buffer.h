@@ -1,6 +1,6 @@
 struct IndexBuffer {
-  bool Initialize(const unsigned int *data, unsigned int count);
-  bool Initialize();
+  void Initialize(const unsigned int *data, unsigned int count);
+  void Initialize();
   void Bind();
   void Unbind();
   

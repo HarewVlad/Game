@@ -16,6 +16,7 @@ void EglManager::Shutdown(struct android_app *app) {
   m_egl_surface = EGL_NO_SURFACE;
 }
 
+// TODO: Remove returns and place asserts
 bool EglManager::Initialize(struct android_app *app) {
   m_egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   if (m_egl_display == EGL_NO_DISPLAY) {

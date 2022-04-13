@@ -58,6 +58,7 @@ void Initialize() {
 // TODO: Link Program and VertexBufferLayout together i guess?
 // TODO: Increase complexity, see something that is bad, (aslo allocate on stack)
 // TODO: Create vertex buffers using texture width and height?
+// TODO: Instead of return codes, just make and assertion and terminate the programm if error is hard
 
 #ifdef __ANDROID__
 void android_main(struct android_app *app) {
@@ -82,9 +83,7 @@ int main() {
   }
 
   ImGuiManagerWin32 imgui_manager_win32;
-  if (!imgui_manager_win32.Initialize(glfw_manager.m_window)) {
-    return -1;
-  }
+  imgui_manager_win32.Initialize(glfw_manager.m_window);
 
   // TODO: Initialize everything else here
   Shader vertex_shader;
@@ -135,6 +134,35 @@ int main() {
   VertexBufferLayout vertex_buffer_layout;
   vertex_buffer_layout.Initialize();
 
+  // Systems
+  Position camera_position;
+  camera_position.Initialize({0, 0});
+
+  CameraSystem camera_system;
+  camera_system.Initialize(&glfw_manager, &camera_position);
+
+  RendererSystem renderer_system;
+  renderer_system.Initialize(&glfw_manager);
+
+  PhysicsSystem physics_system;
+  physics_system.Initialize({0, -4.8f});
+
+  CollisionSystem collision_system;
+  collision_system.Initialize();
+
+  FollowSystem follow_system;
+  follow_system.Initialize(&glfw_manager);
+
+  EntityManager entity_manager;
+  entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system);
+
+  Control control; // TODO: Make it that way, so the user can type code here and select components he needs for movement manipulation
+  control.Initialize(&glfw_manager, 200.0f);
+
+  // Background
+  Texture background_texture;
+  background_texture.Initialize("..\\assets\\background.png");
+
   Box background_box;
   VertexArray background_vertex_array;
   float background_width = glfw_manager.m_width;
@@ -154,10 +182,16 @@ int main() {
     background_box.Initialize(&index_buffer, &background_vertex_array);
   }
 
-  Texture background_texture;
-  background_texture.Initialize("..\\assets\\background.png");
+  Position background_position;
+  background_position.Initialize({0, 0});
 
-  // Animation
+  entity_manager.AddBox(0, &background_box);
+  entity_manager.AddTexture(0, &background_texture);
+  entity_manager.AddProgram(0, &program);
+  entity_manager.AddPosition(0, &background_position);
+  entity_manager.AddToRenderer(0);
+
+  // Player
   Texture *player_idle = NULL;
   arrsetlen(player_idle, 4);
   char buffer[128];
@@ -192,110 +226,83 @@ int main() {
     player_box.Initialize(&index_buffer, &player_vertex_array);
   }
 
-  Control control;
-  control.Initialize(&glfw_manager, 200.0f);
-
-  Position background_position;
-  background_position.Initialize({0, 0});
-
   Position player_position;
-  player_position.Initialize({600, 300});
+  player_position.Initialize({glfw_manager.m_width * 0.5f, 80});
 
   Movement player_movement;
   player_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
 
-  Position camera_position;
-  camera_position.Initialize({0, 0});
-
-  // Systems
-  CameraSystem camera_system;
-  camera_system.Initialize(&glfw_manager, &camera_position);
-
-  RendererSystem renderer_system;
-  renderer_system.Initialize(&glfw_manager);
-
-  PhysicsSystem physics_system;
-  physics_system.Initialize({0, -4.8f});
-
-  CollisionSystem collision_system;
-  collision_system.Initialize();
-
-  FollowSystem follow_system;
-  follow_system.Initialize(&glfw_manager);
-  //
-
-  enum PlayerState {
-    IDLE, RUN
-  };
-
-  State player_state;
-
   Body player_body;
-  player_body.Initialize(&player_position, {player_width, player_height});
+  player_body.Initialize({player_width, player_height});
 
-  EntityManager entity_manager;
-  entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system);
+  entity_manager.AddBox(1, &player_box);
+  entity_manager.AddAnimation(1, &player_animation);
+  entity_manager.AddControl(1, &control);
+  entity_manager.AddProgram(1, &program);
+  entity_manager.AddPosition(1, &player_position);
+  entity_manager.AddMovement(1, &player_movement);
+  entity_manager.AddBody(1, &player_body);
+  entity_manager.AddToRenderer(1);
+  entity_manager.AddToCollision(1, 2);
 
-  // Background
-  entity_manager.AddBox(0, &background_box);
-  entity_manager.AddTexture(0, &background_texture);
-  entity_manager.AddProgram(0, &program);
-  entity_manager.AddPosition(0, &background_position);
-  entity_manager.AddToRenderer(0);
+  // Bear
+  Texture *bear_run = NULL;
+  arrsetlen(bear_run, 4);
+  for (int i = 0; i < arrlen(bear_run); ++i) {
+    (void)snprintf(buffer, 128, "..\\assets\\bear\\%d.png", i);
+    bear_run[i].Initialize(buffer);
+  }
 
-  // Ground
-  Texture ground_texture;
-  ground_texture.Initialize("..\\assets\\ground.png");
+  Animation bear_animation;
+  bear_animation.Initialize();
+  bear_animation.Add(0, bear_run);
 
-  Box ground_box;
-  VertexArray ground_vertex_array;
-  float ground_width = ground_texture.m_width;
-  float ground_height = ground_texture.m_height;
+  Box bear_box;
+  VertexArray bear_vertex_array;
+  float bear_width = bear_run[0].m_width;
+  float bear_height = bear_run[0].m_height;
   {
     VertexBuffer vertex_buffer;
-    vertex_buffer.Initialize(ground_width, ground_height);
+    vertex_buffer.Initialize(player_width, player_height);
 
-    ground_vertex_array.Initialize();
-    ground_vertex_array.AddBuffer(&vertex_buffer, &vertex_buffer_layout);
+    bear_vertex_array.Initialize();
+    bear_vertex_array.AddBuffer(&vertex_buffer, &vertex_buffer_layout);
 
-    ground_box.Initialize(&index_buffer, &ground_vertex_array);
+    bear_box.Initialize(&index_buffer, &bear_vertex_array);
   }
 
-  Position ground_position;
-  ground_position.Initialize({300, 200});
+  Position bear_position;
+  bear_position.Initialize({800, 800});
 
-  Body ground_body;
-  ground_body.Initialize(&ground_position, {ground_width, ground_height});
+  Movement bear_movement;
+  bear_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
 
-  entity_manager.AddBox(1, &ground_box);
-  entity_manager.AddTexture(1, &ground_texture);
-  entity_manager.AddProgram(1, &program);
-  entity_manager.AddPosition(1, &ground_position);
-  entity_manager.AddBody(1, &ground_body);
-  entity_manager.AddToRenderer(1);
-  entity_manager.AddToCollision(1);
+  Body bear_body;
+  bear_body.Initialize({bear_width, bear_height});
 
-  // Player
-  entity_manager.AddBox(2, &player_box);
-  entity_manager.AddAnimation(2, &player_animation);
-  entity_manager.AddControl(2, &control);
+  entity_manager.AddBox(2, &bear_box);
+  entity_manager.AddAnimation(2, &bear_animation);
   entity_manager.AddProgram(2, &program);
-  entity_manager.AddPosition(2, &player_position);
-  entity_manager.AddMovement(2, &player_movement);
-  entity_manager.AddBody(2, &player_body);
-  entity_manager.AddToPhysics(2);
+  entity_manager.AddPosition(2, &bear_position);
+  entity_manager.AddMovement(2, &bear_movement);
+  entity_manager.AddBody(2, &bear_body);
   entity_manager.AddToRenderer(2);
-  entity_manager.AddToCollision(2);
-  entity_manager.SetToCamera(2);
+  entity_manager.AddToPhysics(2);
 
-  // Follow
-  entity_manager.AddToFollow(0, 2);
+  // Callbacks
+  collision_system.SetOnCollideCallback([&](int a, int b) {
+    // Disable from systems
+    entity_manager.RemoveFromCollision(b);
+    entity_manager.RemoveFromPhysics(b);
+    entity_manager.RemoveFromRender(b);
+
+    // Remove resources (In any order, since they are disconnected from systems)
+    // ...
+  });
 
   Win32Manager win32_manager;
-  {
-    win32_manager.Initialize(&glfw_manager, &imgui_manager_win32, &entity_manager);
-    win32_manager.Run();
-  }
+  win32_manager.Initialize(&glfw_manager, &imgui_manager_win32, &entity_manager);
+  win32_manager.Run();
 
   ExitProcess(0);
 }

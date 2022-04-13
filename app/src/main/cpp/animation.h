@@ -1,5 +1,5 @@
 struct Animation {
-  bool Initialize();
+  void Initialize();
   void Add(int id, Texture *textures);
   void Update(float dt);
   Texture *GetCurrentTexture();

@@ -1,10 +1,8 @@
-bool Animation::Initialize() {
+void Animation::Initialize() {
   m_textures = NULL;
   m_index = 0;
   m_id = 0;
   m_time = 0.0f;
-
-  return true;
 }
 
 void Animation::Add(int id, Texture *textures) {

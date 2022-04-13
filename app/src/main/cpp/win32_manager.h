@@ -1,5 +1,5 @@
 struct Win32Manager {
-  bool Initialize(GLFWManager *glfw_manager,
+  void Initialize(GLFWManager *glfw_manager,
                   ImGuiManagerWin32 *imgui_manager_win32,
                   EntityManager *entity_manager);
   void Shutdown();

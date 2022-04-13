@@ -1,12 +1,19 @@
-bool CollisionSystem::Initialize() {
-  return true;
+void CollisionSystem::Initialize() {
 }
 
-void CollisionSystem::Update(Body *a, Body *b, Movement *c, Movement *d, float dt) {
-  if (TestAABBAABB(a, b)) {
-    if (c) c->m_velocity = {};
-    if (d) d->m_velocity = {};
+void CollisionSystem::Update(int id_a, int id_b, Body *body_a, Body *body_b, Movement *movement_a, Movement *movement_b, float dt) {
+  if (TestAABBAABB(body_a, body_b)) {
+    if (movement_a) movement_a->m_velocity = {};
+    if (movement_b) movement_a->m_velocity = {};
+
+    if (m_on_collide) {
+      m_on_collide(id_a, id_b);
+    }
   }
+}
+
+void CollisionSystem::SetOnCollideCallback(const std::function<void(int, int)> on_collide) {
+  m_on_collide = on_collide;
 }
 
 bool CollisionSystem::TestAABBAABB(Body *a, Body *b) {

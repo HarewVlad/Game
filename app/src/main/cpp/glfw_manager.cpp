@@ -34,6 +34,7 @@ void GLFWManager::KeyCallback(GLFWwindow *window, int key, int scancode, int act
   }
 }
 
+// TODO: Remove returns and place asserts
 bool GLFWManager::Initialize(int width, int height, const char *title) {
   if (!glfwInit()) {
     LOG(LOG_ERROR, "GLFWManager", "%s", "Unable to initialize GLFW");

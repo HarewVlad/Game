@@ -1,10 +1,10 @@
 struct VertexArray {
-  bool Initialize();
+  void Initialize();
   void AddBuffer(VertexBuffer *vertex_buffer,
                  VertexBufferLayout *vertex_buffer_layout);
   void Bind();
   void Unbind();
-  void Free();
+  void Shutdown();
 
   unsigned int m_id;
 };

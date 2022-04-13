@@ -1,7 +1,5 @@
-bool VertexArray::Initialize() {
+void VertexArray::Initialize() {
   glCall(glGenVertexArrays(1, &m_id));
-
-  return true;
 }
 
 void VertexArray::AddBuffer(VertexBuffer *vertex_buffer,
@@ -22,4 +20,4 @@ void VertexArray::AddBuffer(VertexBuffer *vertex_buffer,
 }
 void VertexArray::Bind() { glCall(glBindVertexArray(m_id)); }
 void VertexArray::Unbind() { glCall(glBindVertexArray(0)); }
-void VertexArray::Free() { glCall(glDeleteVertexArrays(1, &m_id)); }
+void VertexArray::Shutdown() { glCall(glDeleteVertexArrays(1, &m_id)); }

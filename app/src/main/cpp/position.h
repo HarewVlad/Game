@@ -1,5 +1,5 @@
 struct Position {
-  bool Initialize(const glm::vec2& position);
+  void Initialize(const glm::vec2& position);
   void MoveX(float x);
   void MoveY(float y);
   glm::mat4 GetModel();

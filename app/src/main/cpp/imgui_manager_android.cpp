@@ -1,4 +1,4 @@
-bool ImGuiManagerAndroid::Initialize(struct android_app *app) {
+void ImGuiManagerAndroid::Initialize(struct android_app *app) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
@@ -51,7 +51,6 @@ bool ImGuiManagerAndroid::Initialize(struct android_app *app) {
   // Arbitrary scale-up
   // FIXME: Put some effort into DPI awareness
   ImGui::GetStyle().ScaleAllSizes(3.0f);
-  return true;
 }
 
 void ImGuiManagerAndroid::Shutdown() {

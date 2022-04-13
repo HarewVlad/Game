@@ -1,7 +1,7 @@
 // TODO: Add warnings when Texture and Animation bound at the same time (Static
 // vs. Dynamic)
 
-bool EntityManager::Initialize(CameraSystem *camera_system, RendererSystem *renderer_system,
+void EntityManager::Initialize(CameraSystem *camera_system, RendererSystem *renderer_system,
                                PhysicsSystem *physics_system, CollisionSystem *collision_system, FollowSystem *follow_system) {
   m_controls = NULL;
   m_animations = NULL;
@@ -16,13 +16,11 @@ bool EntityManager::Initialize(CameraSystem *camera_system, RendererSystem *rend
   m_renderer_system = renderer_system;
   m_renderer_system_ids = NULL;
   m_collision_system = collision_system;
-  m_collision_system_ids = NULL;
+  m_collision_map = NULL;
   m_camera_system = camera_system;
   m_camera_system_id = -1;
   m_follow_system = follow_system;
   m_follow_map = NULL;
-
-  return true;
 }
 
 void EntityManager::AddAnimation(int id, Animation *animation) {
@@ -59,6 +57,42 @@ void EntityManager::AddBody(int id, Body *body) {
   hmput(m_bodies, id, body);
 }
 
+void EntityManager::RemoveControl(int id) {
+  hmdel(m_controls, id);
+}
+
+void EntityManager::RemoveAnimation(int id) {
+  hmdel(m_animations, id);
+}
+
+void EntityManager::RemoveBox(int id) {
+  hmdel(m_boxes, id);
+}
+
+void EntityManager::RemoveProgram(int id) {
+  hmdel(m_programs, id);
+}
+
+void EntityManager::RemoveTexture(int id) {
+  hmdel(m_textures, id);
+}
+
+void EntityManager::RemovePosition(int id) {
+  hmdel(m_positions, id);
+}
+
+void EntityManager::RemoveMovement(int id) {
+  hmdel(m_movements, id);
+}
+
+void EntityManager::RemoveState(int id) {
+  hmdel(m_states, id);
+}
+
+void EntityManager::RemoveBody(int id) {
+  hmdel(m_bodies, id);
+}
+
 void EntityManager::SetToCamera(int id) {
   m_camera_system_id = id;
 }
@@ -67,10 +101,32 @@ void EntityManager::AddToPhysics(int id) { arrput(m_physics_system_ids, id); }
 
 void EntityManager::AddToRenderer(int id) { arrput(m_renderer_system_ids, id); }
 
-void EntityManager::AddToCollision(int id) { arrput(m_collision_system_ids, id); }
+void EntityManager::AddToCollision(int a, int b) { hmput(m_collision_map, a, b); }
 
 void EntityManager::AddToFollow(int a, int b) {
   hmput(m_follow_map, a, b);
+}
+
+void EntityManager::RemoveFromCollision(int id) {
+  hmdel(m_collision_map, id);
+}
+
+void EntityManager::RemoveFromPhysics(int id) {
+  for (int i = 0; i < arrlen(m_physics_system_ids); ++i) {
+    if (m_physics_system_ids[i] == id) {
+      arrdel(m_physics_system_ids, i);
+      break;
+    }
+  }
+}
+
+void EntityManager::RemoveFromRender(int id) {
+  for (int i = 0; i < arrlen(m_renderer_system_ids); ++i) {
+    if (m_renderer_system_ids[i] == id) {
+      arrdel(m_renderer_system_ids, i);
+      break;
+    }
+  }
 }
 
 void EntityManager::Update(float dt) {
@@ -83,7 +139,7 @@ void EntityManager::Update(float dt) {
   for (int i = 0; i < arrlen(m_physics_system_ids); ++i) {
     Movement *movement = hmget(m_movements, m_physics_system_ids[i]);
 
-    // m_physics_system->Update(movement, dt);
+    m_physics_system->Update(movement, dt);
   }
 
   for (int i = 0; i < hmlen(m_movements); ++i) {
@@ -92,15 +148,15 @@ void EntityManager::Update(float dt) {
     m_movements[i].value->Update(position, dt);
   }
 
-  for (int i = 0; i < arrlen(m_collision_system_ids); ++i) {
-    for (int j = i + 1; j < arrlen(m_collision_system_ids); ++j) {
-      Body *a = hmget(m_bodies, m_collision_system_ids[i]);
-      Body *b = hmget(m_bodies, m_collision_system_ids[j]);
-      Movement *c = hmget(m_movements, m_collision_system_ids[i]);
-      Movement *d = hmget(m_movements, m_collision_system_ids[j]);
+  for (int i = 0; i < hmlen(m_collision_map); ++i) {
+    int id_a = m_collision_map[i].key;
+    int id_b = m_collision_map[i].value;
+    Body *body_a = hmget(m_bodies, id_a);
+    Body *body_b = hmget(m_bodies, id_b);
+    Movement *movement_a = hmget(m_movements, id_a);
+    Movement *movement_b = hmget(m_movements, id_b);
 
-      m_collision_system->Update(a, b, c, d, dt);
-    }
+    m_collision_system->Update(id_a, id_b, body_a, body_b, movement_a, movement_b, dt);
   }
 
   for (int i = 0; i < hmlen(m_controls); ++i) {
@@ -122,7 +178,6 @@ void EntityManager::Update(float dt) {
     Position *b = hmget(m_positions, m_camera_system_id);
 
     m_follow_system->Update(a, b);
-    // m_camera_system->Follow(b); // NOTE(Vlad): Should we just use this method instead of above?
   }
 
   for (int i = 0; i < hmlen(m_animations); ++i) {

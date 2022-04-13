@@ -1,7 +1,5 @@
-bool RendererSystem::Initialize(GLFWManager *glfw_manager) {
+void RendererSystem::Initialize(GLFWManager *glfw_manager) {
   m_glfw_manager = glfw_manager;
-
-  return true;
 }
 
 void RendererSystem::RenderBoxBegin(Position *position, CameraSystem *camera_system, Program *program) {

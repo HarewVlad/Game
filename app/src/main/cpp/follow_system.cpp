@@ -1,7 +1,5 @@
-bool FollowSystem::Initialize(GLFWManager *glfw_manager) {
+void FollowSystem::Initialize(GLFWManager *glfw_manager) {
   m_glfw_manager = glfw_manager;
-
-  return true;
 }
 
 void FollowSystem::Update(Position *a, Position *b) {

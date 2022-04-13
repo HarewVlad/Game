@@ -1,7 +1,5 @@
-bool Program::Initialize() {
+void Program::Initialize() {
   m_id = glCall(glCreateProgram());
-
-  return true;
 }
 
 void Program::AddShader(const Shader *shader) { glCall(glAttachShader(m_id, shader->m_id)); }

@@ -1,3 +1,4 @@
+// TODO: Remove returns and place asserts
 bool Shader::Initialize(const char *code, unsigned int type) {
   m_id = glCall(glCreateShader(type));
 

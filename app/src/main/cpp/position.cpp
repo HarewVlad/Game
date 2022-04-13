@@ -1,7 +1,5 @@
-bool Position::Initialize(const glm::vec2& position) {
+void Position::Initialize(const glm::vec2& position) {
   m_position = position;
-
-  return true;
 }
 
 void Position::MoveX(float x) {

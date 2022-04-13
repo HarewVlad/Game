@@ -1,8 +1,6 @@
-bool Box::Initialize(IndexBuffer *index_buffer, VertexArray *vertex_array) {
+void Box::Initialize(IndexBuffer *index_buffer, VertexArray *vertex_array) {
   m_vertex_array = vertex_array;
   m_index_buffer = index_buffer;
-  
-  return true;
 }
 
 void Box::Bind() {
@@ -17,4 +15,8 @@ void Box::Unbind() {
 
 void Box::Draw() {
   glDrawElements(GL_TRIANGLES, m_index_buffer->m_count, GL_UNSIGNED_INT, nullptr);
+}
+
+void Box::Shutdown() {
+
 }

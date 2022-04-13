@@ -1,11 +1,9 @@
-bool Win32Manager::Initialize(GLFWManager *glfw_manager,
+void Win32Manager::Initialize(GLFWManager *glfw_manager,
                               ImGuiManagerWin32 *imgui_manager_win32,
                               EntityManager *entity_manager) {
   m_glfw_manager = glfw_manager;
   m_imgui_manager_win32 = imgui_manager_win32;
   m_entity_manager = entity_manager;
-
-  return true;
 }
 
 void Win32Manager::Run() {
