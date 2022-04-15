@@ -30,16 +30,17 @@
 #include "imgui/imgui_impl_opengl3.h"
 #include "stb/stb_image.h"
 #include "stb/stb_ds.h"
-#include "time.h"
 #include "glm/glm.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 
 static bool Global_IsInitialized = false;
 static const glm::mat4 Global_Identity = glm::mat4(1.0f);
+static const int MAX_FPS = 120;
 
 #include "log.h"
 #include "utility.h"
+#include "time.h"
 #ifdef __ANDROID__
   #include "egl_manager.h"
 #elif defined _WIN32
@@ -58,7 +59,6 @@ static const glm::mat4 Global_Identity = glm::mat4(1.0f);
 #include "follow_system.h"
 #include "body.h"
 #include "movement.h"
-#include "state.h"
 #include "camera_system.h"
 #include "control.h"
 #include "renderer_system.h"
@@ -80,3 +80,4 @@ static const glm::mat4 Global_Identity = glm::mat4(1.0f);
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "libs\\glfw3.lib")
 #pragma comment(lib, "libs\\glew32s.lib")
+#pragma comment(lib, "Winmm.lib")

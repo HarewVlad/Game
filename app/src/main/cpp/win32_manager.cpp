@@ -1,25 +1,43 @@
-void Win32Manager::Initialize(GLFWManager *glfw_manager,
+void Win32Manager::Initialize(GLFWManager *glfw_manager, Time *time,
                               ImGuiManagerWin32 *imgui_manager_win32,
                               EntityManager *entity_manager) {
   m_glfw_manager = glfw_manager;
+  m_time = time;
   m_imgui_manager_win32 = imgui_manager_win32;
   m_entity_manager = entity_manager;
 }
 
 void Win32Manager::Run() {
-  float last_frame_time = 0.0f;
+  int old_time = m_time->GetMilliseconds();
+  int extra_time = 0;
+  int frame_time = 1000 / MAX_FPS;
   while (!glfwWindowShouldClose(m_glfw_manager->m_window)) {
-    float time = static_cast<float>(glfwGetTime());
-    float dt = time - last_frame_time;
-    last_frame_time = time;
+    int new_time = m_time->GetMilliseconds();
+    int time = new_time - old_time;
 
-    Update(dt);
-    Render();
+    ////// FRAME ///////
+
+    if (m_glfw_manager->IsWindowFocused()) {
+      extra_time += time;
+
+      while (extra_time > frame_time) {
+        Update(frame_time / 1000.0f);
+
+        extra_time -= frame_time;
+      }
+      
+
+      Render();
+    } else {
+      Sleep(5);
+    }
 
     glfwSwapBuffers(m_glfw_manager->m_window);
     glfwPollEvents();
 
-    // Sleep(50);
+    /////// END FRAME ///////
+
+    old_time = new_time;
   }
 }
 

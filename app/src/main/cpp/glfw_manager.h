@@ -10,6 +10,8 @@ struct GLFWManager {
   void FrameBufferSizeCallback(GLFWwindow *window, int width, int height);
   void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
   bool IsKeyPressed(int key);
+  int GetWindowFlag(int flag);
+  bool IsWindowFocused();
 
   static GLFWManager *m_glfw_manager;
 

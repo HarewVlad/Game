@@ -55,7 +55,7 @@ bool GLFWManager::Initialize(int width, int height, const char *title) {
   glfwMakeContextCurrent(m_window);
   glfwSetFramebufferSizeCallback(m_window, FrameBufferSizeCallbackStatic);
   glfwSetKeyCallback(m_window, KeyCallbackStatic);
-  glfwSwapInterval(1); // NOTE(Vlad): When setuped causes lag on mouse move or any input?
+  // glfwSwapInterval(1); // NOTE(Vlad): When setuped causes lag on mouse move or any input?
 
   GLenum error = glewInit();
   if (error != GLEW_OK) {
@@ -80,4 +80,12 @@ void GLFWManager::Shutdown() {
 
 bool GLFWManager::IsKeyPressed(int key) {
   return hmget(m_key_state, key);
+}
+
+int GLFWManager::GetWindowFlag(int flag) {
+  return glfwGetWindowAttrib(m_window, flag);
+}
+
+bool GLFWManager::IsWindowFocused() {
+  return GetWindowFlag(GLFW_FOCUSED) && GetWindowFlag(GLFW_HOVERED);
 }

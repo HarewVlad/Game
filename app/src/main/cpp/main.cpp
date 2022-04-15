@@ -14,6 +14,7 @@
 
 #include "log.cpp"
 #include "utility.cpp"
+#include "time.cpp"
 #include "vertex_buffer_layout.cpp"
 #include "vertex_buffer.cpp"
 #include "index_buffer.cpp"
@@ -51,7 +52,7 @@
 #endif
 
 void Initialize() {
-  stbds_rand_seed(time(NULL));
+  stbds_rand_seed(timeGetTime());
 }
 
 // TODO: Rework code, make initialization the same for two platforms
@@ -291,17 +292,16 @@ int main() {
 
   // Callbacks
   collision_system.SetOnCollideCallback([&](int a, int b) {
-    // Disable from systems
-    entity_manager.RemoveFromCollision(b);
-    entity_manager.RemoveFromPhysics(b);
-    entity_manager.RemoveFromRender(b);
+    Position *position = hmget(entity_manager.m_positions, b);
 
-    // Remove resources (In any order, since they are disconnected from systems)
-    // ...
+    position->m_position = {800, 800};
   });
 
+  Time time;
+  time.Initialize();
+
   Win32Manager win32_manager;
-  win32_manager.Initialize(&glfw_manager, &imgui_manager_win32, &entity_manager);
+  win32_manager.Initialize(&glfw_manager, &time, &imgui_manager_win32, &entity_manager);
   win32_manager.Run();
 
   ExitProcess(0);

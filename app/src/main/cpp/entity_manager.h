@@ -7,7 +7,6 @@ struct EntityManager {
   void AddTexture(int id, Texture *texture);
   void AddPosition(int id, Position *position);
   void AddMovement(int id, Movement *movement);
-  void AddState(int id, State *state);
   void AddBody(int id, Body *body);
 
   void RemoveControl(int id);
@@ -17,7 +16,6 @@ struct EntityManager {
   void RemoveTexture(int id);
   void RemovePosition(int id);
   void RemoveMovement(int id);
-  void RemoveState(int id);
   void RemoveBody(int id);
 
   void AddToPhysics(int id);
@@ -42,7 +40,6 @@ struct EntityManager {
   PositionMap *m_positions;
   MovementMap *m_movements;
   BodyMap *m_bodies;
-  StateMap *m_states;
 
   // Systems
   PhysicsSystem *m_physics_system;

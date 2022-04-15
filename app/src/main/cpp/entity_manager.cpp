@@ -49,10 +49,6 @@ void EntityManager::AddMovement(int id, Movement *movement) {
   hmput(m_movements, id, movement);
 }
 
-void EntityManager::AddState(int id, State *state) {
-  hmput(m_states, id, state);
-}
-
 void EntityManager::AddBody(int id, Body *body) {
   hmput(m_bodies, id, body);
 }
@@ -83,10 +79,6 @@ void EntityManager::RemovePosition(int id) {
 
 void EntityManager::RemoveMovement(int id) {
   hmdel(m_movements, id);
-}
-
-void EntityManager::RemoveState(int id) {
-  hmdel(m_states, id);
 }
 
 void EntityManager::RemoveBody(int id) {
