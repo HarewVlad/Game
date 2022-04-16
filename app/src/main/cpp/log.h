@@ -11,3 +11,7 @@ enum LogPriority {
   LOG_FATAL,
   LOG_SILENT
 };
+
+char *LogPriorityString[] = {"LOG_UNKNOWN", "LOG_DEFAULT", "LOG_VERBOSE",
+                             "LOG_DEBUG",   "LOG_INFO",    "LOG_WARN",
+                             "LOG_ERROR",   "LOG_FATAL",   "LOG_SILENT"};

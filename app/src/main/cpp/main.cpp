@@ -39,7 +39,8 @@
 #include "body.cpp"
 #include "movement.cpp"
 #include "camera_system.cpp"
-#include "control.cpp"
+#include "control_system.cpp"
+#include "health.cpp"
 #include "renderer_system.cpp"
 #include "collision_system.cpp"
 #include "physics_system.cpp"
@@ -154,11 +155,11 @@ int main() {
   FollowSystem follow_system;
   follow_system.Initialize(&glfw_manager);
 
-  EntityManager entity_manager;
-  entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system);
+  ControlSystem control_system; // TODO: Make it that way, so the user can type code here and select components he needs for movement manipulation
+  control_system.Initialize(&glfw_manager);
 
-  Control control; // TODO: Make it that way, so the user can type code here and select components he needs for movement manipulation
-  control.Initialize(&glfw_manager, 200.0f);
+  EntityManager entity_manager;
+  entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system, &control_system);
 
   // Background
   Texture background_texture;
@@ -193,6 +194,14 @@ int main() {
   entity_manager.AddToRenderer(0);
 
   // Player
+  enum class PlayerState {
+    IDLE,
+    RUN
+  };
+
+  State player_state;
+  player_state.Initialize((int)PlayerState::IDLE);
+
   Texture *player_idle = NULL;
   arrsetlen(player_idle, 4);
   char buffer[128];
@@ -210,8 +219,8 @@ int main() {
 
   Animation player_animation;
   player_animation.Initialize();
-  player_animation.Add(0, player_idle);
-  player_animation.Add(1, player_run);
+  player_animation.Add((int)PlayerState::IDLE, player_idle);
+  player_animation.Add((int)PlayerState::RUN, player_run);
 
   Box player_box;
   VertexArray player_vertex_array;
@@ -238,13 +247,14 @@ int main() {
 
   entity_manager.AddBox(1, &player_box);
   entity_manager.AddAnimation(1, &player_animation);
-  entity_manager.AddControl(1, &control);
   entity_manager.AddProgram(1, &program);
   entity_manager.AddPosition(1, &player_position);
   entity_manager.AddMovement(1, &player_movement);
   entity_manager.AddBody(1, &player_body);
+  entity_manager.AddState(1, &player_state);
   entity_manager.AddToRenderer(1);
   entity_manager.AddToCollision(1, 2);
+  entity_manager.SetToControl(1);
 
   // Bear
   Texture *bear_run = NULL;
@@ -287,8 +297,25 @@ int main() {
   entity_manager.AddPosition(2, &bear_position);
   entity_manager.AddMovement(2, &bear_movement);
   entity_manager.AddBody(2, &bear_body);
+  // entity_manager.AddToRenderer(2);
+  // entity_manager.AddToPhysics(2);
+
+  // Test
+
+  // entity_manager.AddComponent(2, (int)Components::BOX, &bear_box);
+  // entity_manager.AddComponent(2, (int)Components::ANIMATION, &bear_animation);
+  // entity_manager.AddComponent(2, (int)Components::PROGRAM, &program);
+  // entity_manager.AddComponent(2, (int)Components::POSITION, &bear_position);
+  // entity_manager.AddComponent(2, (int)Components::MOVEMENT, &bear_movement);
+  // entity_manager.AddComponent(2, (int)Components::BODY, &bear_body);
   entity_manager.AddToRenderer(2);
   entity_manager.AddToPhysics(2);
+
+  // TODO:
+  // 1. Need to have default component list - PROGRAM, MOVEMENT, ...
+  // entity_manager.AddComponent(PROGRAM, &program);
+  Health player_health;
+  player_health.Initialize(3);
 
   // Callbacks
   collision_system.SetOnCollideCallback([&](int a, int b) {
@@ -296,6 +323,21 @@ int main() {
 
     position->m_position = {800, 800};
   });
+
+  control_system.SetUpdateCallback([&](Movement *movement, State *state, float dt) {
+    // TODO: Movement based on box2d-lite later
+    if (glfw_manager.IsKeyPressed(GLFW_KEY_A)) {
+      movement->m_velocity.x -= 200.0f;
+      state->m_value = (int)PlayerState::RUN;
+    } else if (glfw_manager.IsKeyPressed(GLFW_KEY_D)) {
+      movement->m_velocity.x += 200.0f;
+      state->m_value = (int)PlayerState::RUN;
+    } else {
+      state->m_value = (int)PlayerState::IDLE;
+    }
+  });
+
+  // TODO: How to create the logic for the game?
 
   Time time;
   time.Initialize();

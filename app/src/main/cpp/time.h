@@ -6,3 +6,11 @@ struct Time {
 
   int m_base;
 };
+
+int GetMillisecondsStatic();
+
+double PCFreq = 0.0;
+__int64 CounterStart = 0;
+
+void StartCounter();
+double GetCounter();

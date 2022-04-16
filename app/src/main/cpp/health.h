@@ -1,10 +1,10 @@
-struct State {
+struct Health {
   void Initialize(int value);
 
   int m_value;
 };
 
-struct StateMap {
+struct HealthMap {
   int key;
-  State *value;
+  Health *value;
 };

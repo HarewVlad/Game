@@ -1,9 +1,9 @@
 struct Animation {
   void Initialize();
   void Add(int id, Texture *textures);
+  void Update(State *state, float dt);
   void Update(float dt);
   Texture *GetCurrentTexture();
-  void SetId(int id);
 
   TextureMap *m_textures;
   int m_id;
