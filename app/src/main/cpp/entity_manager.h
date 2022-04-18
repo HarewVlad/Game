@@ -1,5 +1,6 @@
 enum class Components {
   BOX,
+  STATE,
   ANIMATION,
   PROGRAM,
   TEXTURE,
@@ -21,18 +22,22 @@ enum class Systems {
   COUNT
 };
 
-struct Component {
+struct ComponentMap {
   int key;
-  void **value; // NOTE(Vlad): Array to hold any type
+  void *value;
 };
 
-struct ComponentFlag {
+struct Component {
   int key;
-  int *value;
+  ComponentMap *value;
 };
 
 struct EntityManager {
-  void Initialize(CameraSystem *camera_system, RendererSystem *renderer_system, PhysicsSystem *physics_system, CollisionSystem *collision_system, FollowSystem *follow_system, ControlSystem *control_system);
+  void Initialize(CameraSystem *camera_system, RendererSystem *renderer_system,
+                  PhysicsSystem *physics_system,
+                  CollisionSystem *collision_system,
+                  FollowSystem *follow_system, ControlSystem *control_system,
+                  InterfaceSystem *interface_system);
   void AddAnimation(int id, Animation *animation);
   void AddBox(int id, Box *box);
   void AddProgram(int id, Program *program);
@@ -52,7 +57,9 @@ struct EntityManager {
 
   void AddToPhysics(int id);
   void AddToRenderer(int id);
-  void AddToCollision(int a, int b); // NOTE(Vlad) A - Object that wants to collide with B
+  void
+  AddToCollision(int a,
+                 int b); // NOTE(Vlad) A - Object that wants to collide with B
   void SetToCamera(int id);
   void SetToControl(int id);
   void AddToFollow(int a, int b); // NOTE(Vlad): A - Follower, B - The KING
@@ -65,16 +72,25 @@ struct EntityManager {
   void Update(float dt);
   void Render();
 
-  // Test
-  void AddComponent(int id, int component, void *data) {
-    void **array = NULL;
-    if (hmgeti(m_components, id) >= 0) {
-      array = hmget(m_components, id);
+  void AddComponent(int id, int type, void *data) {
+    // std::map<type, std::map<entity, type>>
+    ComponentMap *component_map = NULL;
+    if (hmgeti(m_components, type) >= 0) { // If component registered
+      component_map = hmget(m_components, type);
+      hmput(component_map, id, data);
     } else {
-      arraddnptr(array, (int)Components::COUNT);
+      hmput(component_map, id, data);
     }
-    array[component] = data;
-    hmput(m_components, id, array);
+    hmput(m_components, type, component_map);
+  }
+
+  void *GetComponent(int type, int id) {
+    if (hmgeti(m_components, type) >= 0) {
+      ComponentMap *component_map = m_components[type].value;
+      return component_map[id].value;
+    } else {
+      return NULL;
+    }
   }
 
   void Old(float dt);
@@ -108,6 +124,8 @@ struct EntityManager {
 
   ControlSystem *m_control_system;
   int m_control_system_id; // NOTE(Vlad): Only one can be controlled for now
+
+  InterfaceSystem *m_interface_system;
 
   // Test
   Component *m_components;

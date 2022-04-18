@@ -44,8 +44,9 @@
 #include "renderer_system.cpp"
 #include "collision_system.cpp"
 #include "physics_system.cpp"
-#include "entity_manager.cpp"
 #include "imgui_manager.cpp"
+#include "interface_system.cpp"
+#include "entity_manager.cpp"
 #ifdef __ANDROID__
   #include "imgui_manager_android.cpp"
 #elif defined _WIN32
@@ -158,8 +159,11 @@ int main() {
   ControlSystem control_system; // TODO: Make it that way, so the user can type code here and select components he needs for movement manipulation
   control_system.Initialize(&glfw_manager);
 
+  InterfaceSystem interface_system;
+  interface_system.Initialize(&imgui_manager_win32);
+
   EntityManager entity_manager;
-  entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system, &control_system);
+  entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system, &control_system, &interface_system);
 
   // Background
   Texture background_texture;
@@ -192,6 +196,13 @@ int main() {
   entity_manager.AddProgram(0, &program);
   entity_manager.AddPosition(0, &background_position);
   entity_manager.AddToRenderer(0);
+
+  // Test
+
+  // entity_manager.AddComponent(0, (int)Components::BOX, &background_box);
+  // entity_manager.AddComponent(0, (int)Components::TEXTURE, &background_texture);
+  // entity_manager.AddComponent(0, (int)Components::PROGRAM, &program);
+  // entity_manager.AddComponent(0, (int)Components::POSITION, &background_position);
 
   // Player
   enum class PlayerState {
@@ -256,6 +267,16 @@ int main() {
   entity_manager.AddToCollision(1, 2);
   entity_manager.SetToControl(1);
 
+  // Test
+
+  // entity_manager.AddComponent(1, (int)Components::BOX, &player_box);
+  // entity_manager.AddComponent(1, (int)Components::ANIMATION, &player_animation);
+  // entity_manager.AddComponent(1, (int)Components::PROGRAM, &program);
+  // entity_manager.AddComponent(1, (int)Components::POSITION, &player_position);
+  // entity_manager.AddComponent(1, (int)Components::MOVEMENT, &player_movement);
+  // entity_manager.AddComponent(1, (int)Components::BODY, &player_body);
+  // entity_manager.AddComponent(1, (int)Components::STATE, &player_state);
+
   // Bear
   Texture *bear_run = NULL;
   arrsetlen(bear_run, 4);
@@ -297,23 +318,17 @@ int main() {
   entity_manager.AddPosition(2, &bear_position);
   entity_manager.AddMovement(2, &bear_movement);
   entity_manager.AddBody(2, &bear_body);
-  // entity_manager.AddToRenderer(2);
-  // entity_manager.AddToPhysics(2);
+  entity_manager.AddToRenderer(2);
+  entity_manager.AddToPhysics(2);
 
   // Test
-
   // entity_manager.AddComponent(2, (int)Components::BOX, &bear_box);
   // entity_manager.AddComponent(2, (int)Components::ANIMATION, &bear_animation);
   // entity_manager.AddComponent(2, (int)Components::PROGRAM, &program);
   // entity_manager.AddComponent(2, (int)Components::POSITION, &bear_position);
   // entity_manager.AddComponent(2, (int)Components::MOVEMENT, &bear_movement);
   // entity_manager.AddComponent(2, (int)Components::BODY, &bear_body);
-  entity_manager.AddToRenderer(2);
-  entity_manager.AddToPhysics(2);
 
-  // TODO:
-  // 1. Need to have default component list - PROGRAM, MOVEMENT, ...
-  // entity_manager.AddComponent(PROGRAM, &program);
   Health player_health;
   player_health.Initialize(3);
 
@@ -326,7 +341,7 @@ int main() {
 
   control_system.SetUpdateCallback([&](Movement *movement, State *state, float dt) {
     // TODO: Movement based on box2d-lite later
-    if (glfw_manager.IsKeyPressed(GLFW_KEY_A)) {
+    if (glfw_manager.IsKeyPressed(GLFW_KEY_A)) { // TODO: Replace with InputManager later for Android and other
       movement->m_velocity.x -= 200.0f;
       state->m_value = (int)PlayerState::RUN;
     } else if (glfw_manager.IsKeyPressed(GLFW_KEY_D)) {
@@ -343,7 +358,7 @@ int main() {
   time.Initialize();
 
   Win32Manager win32_manager;
-  win32_manager.Initialize(&glfw_manager, &time, &imgui_manager_win32, &entity_manager);
+  win32_manager.Initialize(&glfw_manager, &time, &entity_manager);
   win32_manager.Run();
 
   ExitProcess(0);

@@ -1,9 +1,7 @@
 void Win32Manager::Initialize(GLFWManager *glfw_manager, Time *time,
-                              ImGuiManagerWin32 *imgui_manager_win32,
                               EntityManager *entity_manager) {
   m_glfw_manager = glfw_manager;
   m_time = time;
-  m_imgui_manager_win32 = imgui_manager_win32;
   m_entity_manager = entity_manager;
 }
 
@@ -26,7 +24,6 @@ void Win32Manager::Run() {
         extra_time -= frame_time;
       }
       
-
       Render();
     } else {
       Sleep(5);
@@ -51,9 +48,6 @@ void Win32Manager::Render() {
   glViewport(0, 0, m_glfw_manager->m_width, m_glfw_manager->m_height);
 
   m_entity_manager->Render();
-  m_imgui_manager_win32
-      ->RenderBegin(); // NOTE(Vlad): This part may be specifi to OS
-  m_imgui_manager_win32->Render();
 }
 
 void Win32Manager::Update(float dt) {
@@ -62,5 +56,4 @@ void Win32Manager::Update(float dt) {
 
 void Win32Manager::Shutdown() {
   m_glfw_manager->Shutdown();
-  m_imgui_manager_win32->Shutdown();
 }

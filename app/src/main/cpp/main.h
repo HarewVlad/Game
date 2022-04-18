@@ -66,8 +66,9 @@ static const int MAX_FPS = 120;
 #include "renderer_system.h"
 #include "collision_system.h"
 #include "physics_system.h"
-#include "entity_manager.h"
 #include "imgui_manager.h"
+#include "interface_system.h"
+#include "entity_manager.h"
 #ifdef __ANDROID__
   #include "imgui_manager_android.h"
   #include "android_manager.h"
