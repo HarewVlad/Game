@@ -12,7 +12,7 @@ void CollisionSystem::Update(int id_a, int id_b, Body *body_a, Body *body_b, Mov
   }
 }
 
-void CollisionSystem::SetOnCollideCallback(const std::function<void(int, int)> on_collide) {
+void CollisionSystem::SetOnCollision(const std::function<void(int, int)> on_collide) {
   m_on_collide = on_collide;
 }
 

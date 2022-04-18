@@ -1,6 +1,6 @@
 struct CollisionSystem {
   void Initialize();
-  void SetOnCollideCallback(const std::function<void(int, int)> on_collide);
+  void SetOnCollision(const std::function<void(int, int)> on_collide);
   void Update(int id_a, int id_b, Body *body_a, Body *body_b, Movement *movement_a, Movement *movement_b, float dt);
   bool TestAABBAABB(Body *a, Body *b);
 

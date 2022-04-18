@@ -46,14 +46,7 @@ struct EntityManager {
   void AddMovement(int id, Movement *movement);
   void AddBody(int id, Body *body);
   void AddState(int id, State *state);
-
-  void RemoveAnimation(int id);
-  void RemoveBox(int id);
-  void RemoveProgram(int id);
-  void RemoveTexture(int id);
-  void RemovePosition(int id);
-  void RemoveMovement(int id);
-  void RemoveBody(int id);
+  void AddHealth(int id, Health *health);
 
   void AddToPhysics(int id);
   void AddToRenderer(int id);
@@ -62,6 +55,7 @@ struct EntityManager {
                  int b); // NOTE(Vlad) A - Object that wants to collide with B
   void SetToCamera(int id);
   void SetToControl(int id);
+  void SetToInterface(int id);
   void AddToFollow(int a, int b); // NOTE(Vlad): A - Follower, B - The KING
 
   void RemoveFromCollision(int id);
@@ -105,6 +99,7 @@ struct EntityManager {
   MovementMap *m_movements;
   BodyMap *m_bodies;
   StateMap *m_states;
+  HealthMap *m_healths;
 
   // Systems
   PhysicsSystem *m_physics_system;
@@ -126,6 +121,7 @@ struct EntityManager {
   int m_control_system_id; // NOTE(Vlad): Only one can be controlled for now
 
   InterfaceSystem *m_interface_system;
+  int m_interface_system_id;
 
   // Test
   Component *m_components;

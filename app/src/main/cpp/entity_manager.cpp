@@ -15,6 +15,7 @@ void EntityManager::Initialize(CameraSystem *camera_system,
   m_positions = NULL;
   m_movements = NULL;
   m_bodies = NULL;
+  m_healths = NULL;
   m_physics_system = physics_system;
   m_physics_system_ids = NULL;
   m_renderer_system = renderer_system;
@@ -28,6 +29,7 @@ void EntityManager::Initialize(CameraSystem *camera_system,
   m_control_system = control_system;
   m_control_system_id = -1;
   m_interface_system = interface_system;
+  m_interface_system_id = -1;
 
   // Test
   m_components = NULL;
@@ -61,23 +63,17 @@ void EntityManager::AddState(int id, State *state) {
   hmput(m_states, id, state);
 }
 
-void EntityManager::RemoveAnimation(int id) { hmdel(m_animations, id); }
-
-void EntityManager::RemoveBox(int id) { hmdel(m_boxes, id); }
-
-void EntityManager::RemoveProgram(int id) { hmdel(m_programs, id); }
-
-void EntityManager::RemoveTexture(int id) { hmdel(m_textures, id); }
-
-void EntityManager::RemovePosition(int id) { hmdel(m_positions, id); }
-
-void EntityManager::RemoveMovement(int id) { hmdel(m_movements, id); }
-
-void EntityManager::RemoveBody(int id) { hmdel(m_bodies, id); }
+void EntityManager::AddHealth(int id, Health *health) {
+  hmput(m_healths, id, health);
+}
 
 void EntityManager::SetToCamera(int id) { m_camera_system_id = id; }
 
 void EntityManager::SetToControl(int id) { m_control_system_id = id; }
+
+void EntityManager::SetToInterface(int id) {
+  m_interface_system_id = id;
+}
 
 void EntityManager::AddToPhysics(int id) { arrput(m_physics_system_ids, id); }
 
@@ -139,7 +135,7 @@ void EntityManager::Old(float dt) {
     State *state = hmget(m_states, m_control_system_id);
 
     if (m_control_system->m_update) {
-      m_control_system->m_update(movement, state, dt);
+      m_control_system->m_update(m_control_system_id, dt);
     }
   }
 
@@ -279,5 +275,7 @@ void EntityManager::Render() {
     m_renderer_system->RenderBoxEnd(program);
   }
 
-  m_interface_system->Render();
+  if (m_interface_system->m_render && m_interface_system_id != -1) {
+    m_interface_system->m_render(m_interface_system_id); // User code
+  }
 }
