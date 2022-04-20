@@ -285,21 +285,23 @@ int main() {
     enemy_run_textures[2][i].Initialize(buffer);
   }
 
-  Animation enemy_animations[3];
+  const int enemies_count = 400;
+
+  Animation enemy_animations[enemies_count];
   for (int i = 0; i < sizeof(enemy_animations) / sizeof(Animation); ++i) {
     enemy_animations[i].Initialize();
-    enemy_animations[i].Add(0, enemy_run_textures[i]);
+    enemy_animations[i].Add(0, enemy_run_textures[i % 3]);
   }
 
-  Box enemy_boxes[3];
-  VertexArray enemy_vertex_arrays[3];
-  Position enemy_positions[3];
-  Movement enemy_movements[3];
-  Body enemy_bodies[3];
+  Box enemy_boxes[enemies_count];
+  VertexArray enemy_vertex_arrays[enemies_count];
+  Position enemy_positions[enemies_count];
+  Movement enemy_movements[enemies_count];
+  Body enemy_bodies[enemies_count];
   for (int i = 0; i < sizeof(enemy_boxes) / sizeof(Box); ++i) {
     // Box
-    float width = enemy_run_textures[i][0].m_width;
-    float height = enemy_run_textures[i][0].m_height;
+    float width = enemy_run_textures[i % 3][0].m_width;
+    float height = enemy_run_textures[i % 3][0].m_height;
     {
       VertexBuffer vertex_buffer;
       vertex_buffer.Initialize(width, height);
@@ -311,8 +313,8 @@ int main() {
     }
 
     // Position
-    int x = 200 + rand() % 1000;
-    int y = 1000;
+    int x = 1 + rand() % glfw_manager.m_width;
+    int y = 1 + rand() % glfw_manager.m_height;
     enemy_positions[i].Initialize({x, y});
 
     // Movement
@@ -339,11 +341,11 @@ int main() {
   Body arena_body;
   arena_body.Initialize(BodyType::BOUNDING, {glfw_manager.m_width, glfw_manager.m_height}); // TODO: Change on window change?
 
-  entity_manager.AddPosition(5, &arena_position);
-  entity_manager.AddBody(5, &arena_body);
+  entity_manager.AddPosition(1000, &arena_position);
+  entity_manager.AddBody(1000, &arena_body);
 
-  for (int i = 2; i < 5; ++i) {
-    entity_manager.AddToCollision(5, i);
+  for (int i = 2; i < 2 + sizeof(enemy_bodies) / sizeof(Body); ++i) {
+    entity_manager.AddToCollision(1000, i);
   }
 
   // Test
@@ -372,14 +374,15 @@ int main() {
 
     // position->m_position = {800, 800};
     --health->m_value;
-    movement->m_velocity = {50, 80};
+    movement->m_velocity.x = -500 + rand() % 1000;
+    movement->m_velocity.y = -500 + rand() % 1000;
   });
 
   collision_system.SetOnBoundingCollision([&](int b) {
     Position *position = hmget(entity_manager.m_positions, b);
 
-    position->m_position.x = 200 + rand() % 1000;
-    position->m_position.y = 1000;
+    position->m_position.x = 1 + rand() % glfw_manager.m_width;
+    position->m_position.y = 1 + rand() % glfw_manager.m_height;
   });
 
   control_system.SetUpdate([&](int id, float dt) {
