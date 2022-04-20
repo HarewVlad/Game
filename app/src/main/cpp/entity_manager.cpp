@@ -21,7 +21,7 @@ void EntityManager::Initialize(CameraSystem *camera_system,
   m_renderer_system = renderer_system;
   m_renderer_system_ids = NULL;
   m_collision_system = collision_system;
-  m_collision_map = NULL;
+  m_collision_pairs = NULL;
   m_camera_system = camera_system;
   m_camera_system_id = -1;
   m_follow_system = follow_system;
@@ -80,12 +80,13 @@ void EntityManager::AddToPhysics(int id) { arrput(m_physics_system_ids, id); }
 void EntityManager::AddToRenderer(int id) { arrput(m_renderer_system_ids, id); }
 
 void EntityManager::AddToCollision(int a, int b) {
-  hmput(m_collision_map, a, b);
+  CollisionPair pair = {a, b};
+  arrput(m_collision_pairs, pair);
 }
 
 void EntityManager::AddToFollow(int a, int b) { hmput(m_follow_map, a, b); }
 
-void EntityManager::RemoveFromCollision(int id) { hmdel(m_collision_map, id); }
+void EntityManager::RemoveFromCollision(int id) { arrdel(m_collision_pairs, id); }
 
 void EntityManager::RemoveFromPhysics(int id) {
   for (int i = 0; i < arrlen(m_physics_system_ids); ++i) {
@@ -115,7 +116,7 @@ void EntityManager::Old(float dt) {
   for (int i = 0; i < hmlen(m_movements); ++i) {
     Position *position = hmget(m_positions, m_movements[i].key);
 
-    m_movements[i].value->Update(position, dt);
+    m_movements[i].value->Update(position, dt); // TODO: Add Physics component instead of this, and make MovementSystem
   }
 
   for (int i = 0; i < hmlen(m_animations); ++i) {
@@ -129,7 +130,6 @@ void EntityManager::Old(float dt) {
   }
 
   // Systems
-
   if (m_control_system_id != -1) {
     Movement *movement = hmget(m_movements, m_control_system_id);
     State *state = hmget(m_states, m_control_system_id);
@@ -145,16 +145,16 @@ void EntityManager::Old(float dt) {
     m_physics_system->Update(movement, dt);
   }
 
-  for (int i = 0; i < hmlen(m_collision_map); ++i) {
-    int id_a = m_collision_map[i].key;
-    int id_b = m_collision_map[i].value;
-    Body *body_a = hmget(m_bodies, id_a);
-    Body *body_b = hmget(m_bodies, id_b);
-    Movement *movement_a = hmget(m_movements, id_a);
-    Movement *movement_b = hmget(m_movements, id_b);
+  for (int i = 0; i < arrlen(m_collision_pairs); ++i) {
+    int ida = m_collision_pairs[i].a;
+    int idb = m_collision_pairs[i].b;
+    Body *ba = hmget(m_bodies, ida);
+    Body *bb = hmget(m_bodies, idb);
+    Movement *ma = hmget(m_movements, ida);
+    Movement *mb = hmget(m_movements, idb);
 
-    m_collision_system->Update(id_a, id_b, body_a, body_b, movement_a,
-                               movement_b, dt);
+    m_collision_system->Update(ida, idb, ba, bb, ma,
+                               mb, dt);
   }
 
   for (int i = 0; i < hmlen(m_follow_map); ++i) {
@@ -175,8 +175,8 @@ void EntityManager::Old(float dt) {
 void EntityManager::New(float dt) {
   for (int i = 0; i < hmlen(m_components); ++i) { // Component types
     int type = m_components[i].key;
-    ComponentMap *component_map = m_components[type].value;
 
+    ComponentMap *component_map = m_components[type].value;
     for (int j = 0; j < hmlen(component_map); ++j) { // Entities
       int id = component_map[j].key;
       switch (type) {

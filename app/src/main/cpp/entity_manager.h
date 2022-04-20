@@ -109,7 +109,7 @@ struct EntityManager {
   int *m_renderer_system_ids;
 
   CollisionSystem *m_collision_system;
-  CollisionMap *m_collision_map;
+  CollisionPair *m_collision_pairs;
 
   CameraSystem *m_camera_system;
   int m_camera_system_id; // NOTE(Vlad): Only one entity can use camera

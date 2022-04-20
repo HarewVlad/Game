@@ -148,7 +148,7 @@ int main() {
   renderer_system.Initialize(&glfw_manager);
 
   PhysicsSystem physics_system;
-  physics_system.Initialize({0, -4.8f});
+  physics_system.Initialize({0, -18.8f});
 
   CollisionSystem collision_system;
   collision_system.Initialize();
@@ -196,13 +196,6 @@ int main() {
   entity_manager.AddProgram(0, &program);
   entity_manager.AddPosition(0, &background_position);
   entity_manager.AddToRenderer(0);
-
-  // Test
-
-  // entity_manager.AddComponent(0, (int)Components::BOX, &background_box);
-  // entity_manager.AddComponent(0, (int)Components::TEXTURE, &background_texture);
-  // entity_manager.AddComponent(0, (int)Components::PROGRAM, &program);
-  // entity_manager.AddComponent(0, (int)Components::POSITION, &background_position);
 
   // Player
   enum class PlayerState {
@@ -254,7 +247,7 @@ int main() {
   player_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
 
   Body player_body;
-  player_body.Initialize({player_width, player_height});
+  player_body.Initialize(BodyType::NORMAL, {player_width, player_height});
 
   Health player_health;
   player_health.Initialize(3);
@@ -268,45 +261,34 @@ int main() {
   entity_manager.AddState(1, &player_state);
   entity_manager.AddHealth(1, &player_health);
   entity_manager.AddToRenderer(1);
-  entity_manager.AddToCollision(1, 2);
   entity_manager.SetToControl(1);
   entity_manager.SetToInterface(1);
 
-  // Test
-
-  // entity_manager.AddComponent(1, (int)Components::BOX, &player_box);
-  // entity_manager.AddComponent(1, (int)Components::ANIMATION, &player_animation);
-  // entity_manager.AddComponent(1, (int)Components::PROGRAM, &program);
-  // entity_manager.AddComponent(1, (int)Components::POSITION, &player_position);
-  // entity_manager.AddComponent(1, (int)Components::MOVEMENT, &player_movement);
-  // entity_manager.AddComponent(1, (int)Components::BODY, &player_body);
-  // entity_manager.AddComponent(1, (int)Components::STATE, &player_state);
-
   // Bear, Bandit, Golem
-  Texture *enemy_textures[3] = {};
+  Texture *enemy_run_textures[3] = {};
 
-  arrsetlen(enemy_textures[0], 4);
-  for (int i = 0; i < arrlen(enemy_textures[0]); ++i) {
+  arrsetlen(enemy_run_textures[0], 4);
+  for (int i = 0; i < arrlen(enemy_run_textures[0]); ++i) {
     (void)snprintf(buffer, 128, "..\\assets\\bear\\%d.png", i);
-    enemy_textures[0][i].Initialize(buffer);
+    enemy_run_textures[0][i].Initialize(buffer);
   }
 
-  arrsetlen(enemy_textures[1], 4);
-  for (int i = 0; i < arrlen(enemy_textures[1]); ++i) {
+  arrsetlen(enemy_run_textures[1], 4);
+  for (int i = 0; i < arrlen(enemy_run_textures[1]); ++i) {
     (void)snprintf(buffer, 128, "..\\assets\\bandit\\%d.png", i);
-    enemy_textures[1][i].Initialize(buffer);
+    enemy_run_textures[1][i].Initialize(buffer);
   }
 
-  arrsetlen(enemy_textures[2], 6);
-  for (int i = 0; i < arrlen(enemy_textures[2]); ++i) {
+  arrsetlen(enemy_run_textures[2], 6);
+  for (int i = 0; i < arrlen(enemy_run_textures[2]); ++i) {
     (void)snprintf(buffer, 128, "..\\assets\\golem\\%d.png", i);
-    enemy_textures[2][i].Initialize(buffer);
+    enemy_run_textures[2][i].Initialize(buffer);
   }
 
   Animation enemy_animations[3];
   for (int i = 0; i < sizeof(enemy_animations) / sizeof(Animation); ++i) {
     enemy_animations[i].Initialize();
-    enemy_animations[i].Add(0, enemy_textures[i]);
+    enemy_animations[i].Add(0, enemy_run_textures[i]);
   }
 
   Box enemy_boxes[3];
@@ -316,8 +298,8 @@ int main() {
   Body enemy_bodies[3];
   for (int i = 0; i < sizeof(enemy_boxes) / sizeof(Box); ++i) {
     // Box
-    float width = enemy_textures[i][0].m_width;
-    float height = enemy_textures[i][0].m_height;
+    float width = enemy_run_textures[i][0].m_width;
+    float height = enemy_run_textures[i][0].m_height;
     {
       VertexBuffer vertex_buffer;
       vertex_buffer.Initialize(width, height);
@@ -330,14 +312,14 @@ int main() {
 
     // Position
     int x = 200 + rand() % 1000;
-    int y = 800;
+    int y = 1000;
     enemy_positions[i].Initialize({x, y});
 
     // Movement
     enemy_movements[i].Initialize({10, 0}, {10, 0}, 1.0f, 0);
 
     // Body
-    enemy_bodies[i].Initialize({width, height});
+    enemy_bodies[i].Initialize(BodyType::NORMAL, {width, height});
 
     entity_manager.AddBox(i + 2, &enemy_boxes[i]);
     entity_manager.AddAnimation(i + 2, &enemy_animations[i]);
@@ -347,6 +329,21 @@ int main() {
     entity_manager.AddBody(i + 2, &enemy_bodies[i]);
     entity_manager.AddToRenderer(i + 2);
     entity_manager.AddToPhysics(i + 2);
+    entity_manager.AddToCollision(1, i + 2);
+  }
+
+  // Arena
+  Position arena_position;
+  arena_position.Initialize({0, 0});
+
+  Body arena_body;
+  arena_body.Initialize(BodyType::BOUNDING, {glfw_manager.m_width, glfw_manager.m_height}); // TODO: Change on window change?
+
+  entity_manager.AddPosition(5, &arena_position);
+  entity_manager.AddBody(5, &arena_body);
+
+  for (int i = 2; i < 5; ++i) {
+    entity_manager.AddToCollision(5, i);
   }
 
   // Test
@@ -365,16 +362,26 @@ int main() {
   State game_state;
   game_state.Initialize((int)GameState::PLAY);
 
+  // NOTE(Vlad): All under is just for the ability for me to write code here, i see it that way =)
+
   // Callbacks
-  collision_system.SetOnCollision([&](int a, int b) {
+  collision_system.SetOnNormalCollision([&](int a, int b) {
     // Position *position = hmget(entity_manager.m_positions, b);
     Health *health = hmget(entity_manager.m_healths, a);
+    Movement *movement = hmget(entity_manager.m_movements, b);
 
     // position->m_position = {800, 800};
     --health->m_value;
+    movement->m_velocity = {50, 80};
   });
 
-  // NOTE(Vlad): Done just for the ability for me to write code here, i see it that way =)
+  collision_system.SetOnBoundingCollision([&](int b) {
+    Position *position = hmget(entity_manager.m_positions, b);
+
+    position->m_position.x = 200 + rand() % 1000;
+    position->m_position.y = 1000;
+  });
+
   control_system.SetUpdate([&](int id, float dt) {
     // TODO: Movement based on box2d-lite later
     Movement *movement = hmget(entity_manager.m_movements, id);
@@ -392,7 +399,7 @@ int main() {
   });
 
   interface_system.SetRender([&](int id) {
-    imgui_manager.RenderBegin();
+    imgui_manager.RenderBegin(); // TODO: Mb move it somewhere
 
     Health *health = hmget(entity_manager.m_healths, id);
 
