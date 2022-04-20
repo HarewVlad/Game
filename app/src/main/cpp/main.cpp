@@ -265,7 +265,7 @@ int main() {
   entity_manager.SetToInterface(1);
 
   // Bear, Bandit, Golem
-  Texture *enemy_run_textures[3] = {};
+  Texture *enemy_run_textures[4] = {};
 
   arrsetlen(enemy_run_textures[0], 4);
   for (int i = 0; i < arrlen(enemy_run_textures[0]); ++i) {
@@ -285,12 +285,18 @@ int main() {
     enemy_run_textures[2][i].Initialize(buffer);
   }
 
+  arrsetlen(enemy_run_textures[3], 4);
+  for (int i = 0; i < arrlen(enemy_run_textures[3]); ++i) {
+    (void)snprintf(buffer, 128, "..\\assets\\ent\\%d.png", i);
+    enemy_run_textures[3][i].Initialize(buffer);
+  }
+
   const int enemies_count = 400;
 
   Animation enemy_animations[enemies_count];
   for (int i = 0; i < sizeof(enemy_animations) / sizeof(Animation); ++i) {
     enemy_animations[i].Initialize();
-    enemy_animations[i].Add(0, enemy_run_textures[i % 3]);
+    enemy_animations[i].Add(0, enemy_run_textures[i % 4]);
   }
 
   Box enemy_boxes[enemies_count];
@@ -300,8 +306,8 @@ int main() {
   Body enemy_bodies[enemies_count];
   for (int i = 0; i < sizeof(enemy_boxes) / sizeof(Box); ++i) {
     // Box
-    float width = enemy_run_textures[i % 3][0].m_width;
-    float height = enemy_run_textures[i % 3][0].m_height;
+    float width = enemy_run_textures[i % 4][0].m_width;
+    float height = enemy_run_textures[i % 4][0].m_height;
     {
       VertexBuffer vertex_buffer;
       vertex_buffer.Initialize(width, height);
@@ -411,6 +417,7 @@ int main() {
     window_flags |= ImGuiWindowFlags_NoTitleBar;
     ImGui::Begin("Interface", nullptr, window_flags);
     ImGui::Text("%d", health->m_value);
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
 
     imgui_manager.RenderEnd();
