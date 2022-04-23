@@ -38,6 +38,15 @@ static bool Global_IsInitialized = false;
 static const glm::mat4 Global_Identity = glm::mat4(1.0f);
 static const int MAX_FPS = 120;
 
+enum class GameState {
+  MENU,
+  RUN,
+  // NOTE(Vlad): Insert your states
+  EXIT
+};
+
+static GameState Global_GameState = GameState::MENU;
+
 #include "log.h"
 #include "utility.h"
 #include "time.h"

@@ -107,6 +107,10 @@ void EntityManager::RemoveFromRender(int id) {
 }
 
 void EntityManager::Old(float dt) {
+  if (Global_GameState != GameState::RUN) {
+    return;
+  }
+  
   for (int i = 0; i < hmlen(m_bodies); ++i) {
     Position *position = hmget(m_positions, m_bodies[i].key);
 
@@ -134,9 +138,13 @@ void EntityManager::Old(float dt) {
     Movement *movement = hmget(m_movements, m_control_system_id);
     State *state = hmget(m_states, m_control_system_id);
 
-    if (m_control_system->m_update) {
-      m_control_system->m_update(m_control_system_id, dt);
+    if (m_control_system->m_on_input_player) {
+      m_control_system->m_on_input_player(m_control_system_id, dt);
     }
+  }
+
+  if (m_control_system->m_on_input_global) {
+    m_control_system->m_on_input_global(dt);
   }
 
   for (int i = 0; i < arrlen(m_physics_system_ids); ++i) {

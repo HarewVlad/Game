@@ -9,7 +9,7 @@ void Win32Manager::Run() {
   int old_time = m_time->GetMilliseconds();
   int extra_time = 0;
   int frame_time = 1000 / MAX_FPS;
-  while (!glfwWindowShouldClose(m_glfw_manager->m_window)) {
+  while (!glfwWindowShouldClose(m_glfw_manager->m_window) && Global_GameState != GameState::EXIT) {
     int new_time = m_time->GetMilliseconds();
     int time = new_time - old_time;
 

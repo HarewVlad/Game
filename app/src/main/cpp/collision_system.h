@@ -1,3 +1,5 @@
+// Todo: Collision system is just straight garbage suitable for the game i making, but in future steal something smart
+
 struct CollisionSystem {
   void Initialize();
   void SetOnNormalCollision(const std::function<void(int, int)> on_collide);

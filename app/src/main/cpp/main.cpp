@@ -88,7 +88,6 @@ int main() {
   ImGuiManagerWin32 imgui_manager;
   imgui_manager.Initialize(glfw_manager.m_window);
 
-  // TODO: Initialize everything else here
   Shader vertex_shader;
   {
     const char *vertex_shader_code = R"(#version 330 core
@@ -156,8 +155,7 @@ int main() {
   FollowSystem follow_system;
   follow_system.Initialize(&glfw_manager);
 
-  ControlSystem control_system; // TODO: Make it that way, so the user can type code here and select components he needs for movement manipulation
-  control_system.Initialize(&glfw_manager);
+  ControlSystem control_system;
 
   InterfaceSystem interface_system;
   interface_system.Initialize(&imgui_manager);
@@ -264,6 +262,10 @@ int main() {
   entity_manager.SetToControl(1);
   entity_manager.SetToInterface(1);
 
+  // Arena
+  int arena_width = glfw_manager.m_width;
+  int arena_height = glfw_manager.m_height * 1.5f;
+
   // Bear, Bandit, Golem
   Texture *enemy_run_textures[4] = {};
 
@@ -291,7 +293,7 @@ int main() {
     enemy_run_textures[3][i].Initialize(buffer);
   }
 
-  const int enemies_count = 400;
+  const int enemies_count = 15;
 
   Animation enemy_animations[enemies_count];
   for (int i = 0; i < sizeof(enemy_animations) / sizeof(Animation); ++i) {
@@ -319,8 +321,8 @@ int main() {
     }
 
     // Position
-    int x = 1 + rand() % glfw_manager.m_width;
-    int y = 1 + rand() % glfw_manager.m_height;
+    int x = 1 + rand() % arena_width;
+    int y = arena_height * 0.8f + rand() % arena_height * 0.9f;
     enemy_positions[i].Initialize({x, y});
 
     // Movement
@@ -345,13 +347,13 @@ int main() {
   arena_position.Initialize({0, 0});
 
   Body arena_body;
-  arena_body.Initialize(BodyType::BOUNDING, {glfw_manager.m_width, glfw_manager.m_height}); // TODO: Change on window change?
+  arena_body.Initialize(BodyType::BOUNDING, {arena_width, arena_height});
 
-  entity_manager.AddPosition(1000, &arena_position);
-  entity_manager.AddBody(1000, &arena_body);
+  entity_manager.AddPosition(123456, &arena_position);
+  entity_manager.AddBody(123456, &arena_body);
 
   for (int i = 2; i < 2 + sizeof(enemy_bodies) / sizeof(Body); ++i) {
-    entity_manager.AddToCollision(1000, i);
+    entity_manager.AddToCollision(123456, i);
   }
 
   // Test
@@ -362,36 +364,23 @@ int main() {
   // entity_manager.AddComponent(2, (int)Components::MOVEMENT, &bear_movement);
   // entity_manager.AddComponent(2, (int)Components::BODY, &bear_body);
 
-  enum class GameState {
-    PLAY,
-    GAME_OVER
-  };
-
-  State game_state;
-  game_state.Initialize((int)GameState::PLAY);
-
   // NOTE(Vlad): All under is just for the ability for me to write code here, i see it that way =)
 
   // Callbacks
   collision_system.SetOnNormalCollision([&](int a, int b) {
-    // Position *position = hmget(entity_manager.m_positions, b);
     Health *health = hmget(entity_manager.m_healths, a);
-    Movement *movement = hmget(entity_manager.m_movements, b);
 
-    // position->m_position = {800, 800};
     --health->m_value;
-    movement->m_velocity.x = -500 + rand() % 1000;
-    movement->m_velocity.y = -500 + rand() % 1000;
   });
 
   collision_system.SetOnBoundingCollision([&](int b) {
     Position *position = hmget(entity_manager.m_positions, b);
 
-    position->m_position.x = 1 + rand() % glfw_manager.m_width;
-    position->m_position.y = 1 + rand() % glfw_manager.m_height;
+    position->m_position.x = 1 + rand() % arena_width;
+    position->m_position.y = arena_height * 0.8f + rand() % arena_height * 0.9f;
   });
 
-  control_system.SetUpdate([&](int id, float dt) {
+  control_system.SetOnInputPlayer([&](int id, float dt) {
     // TODO: Movement based on box2d-lite later
     Movement *movement = hmget(entity_manager.m_movements, id);
     State *state = hmget(entity_manager.m_states, id);
@@ -407,17 +396,54 @@ int main() {
     }
   });
 
+  control_system.SetOnInputGlobal([&](float dt) {
+    if (glfw_manager.IsKeyPressed(GLFW_KEY_ESCAPE)) {
+      Global_GameState = GameState::MENU;
+    }
+  });
+
   interface_system.SetRender([&](int id) {
-    imgui_manager.RenderBegin(); // TODO: Mb move it somewhere
+    imgui_manager.RenderBegin();
 
-    Health *health = hmget(entity_manager.m_healths, id);
+    ImGuiIO &io = ImGui::GetIO();
 
-    ImGuiWindowFlags window_flags = 0;
-    window_flags |= ImGuiWindowFlags_NoBackground;
-    window_flags |= ImGuiWindowFlags_NoTitleBar;
-    ImGui::Begin("Interface", nullptr, window_flags);
-    ImGui::Text("%d", health->m_value);
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::SetNextWindowPos(ImVec2(0, 0), 0, ImVec2(0, 0));
+    ImGui::SetNextWindowSize(io.DisplaySize);
+    ImGui::SetNextWindowBgAlpha(0);
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+    ImGui::Begin("Interface", NULL,
+                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+                     ImGuiWindowFlags_NoBringToFrontOnFocus |
+                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                     ImGuiWindowFlags_NoScrollbar);
+
+    switch (Global_GameState) {
+      case GameState::MENU: {
+        ImVec2 button_size = {100, 100};
+        ImGui::SetCursorPos({glfw_manager.m_width / 2.0f - button_size.x * 0.5f, glfw_manager.m_height / 2.0f - button_size.y * 3});
+        if (ImGui::Button("Play", button_size)) {
+          Global_GameState = GameState::RUN;
+        }
+        ImGui::SetCursorPosX(glfw_manager.m_width / 2.0f - button_size.x * 0.5f);
+        ImGui::Button("About", button_size);
+        ImGui::SetCursorPosX(glfw_manager.m_width / 2.0f - button_size.x * 0.5f);
+        if (ImGui::Button("Exit", button_size)) {
+          Global_GameState = GameState::EXIT;
+        }
+      }
+      break;
+      case GameState::RUN: {
+        Health *health = hmget(entity_manager.m_healths, id);
+        
+        ImGui::Text("Health: %d", health->m_value);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        
+      }
+      break;
+    }
+    ImGui::PopStyleVar(2);
     ImGui::End();
 
     imgui_manager.RenderEnd();

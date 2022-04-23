@@ -1,7 +1,7 @@
-void ControlSystem::Initialize(GLFWManager *glfw_manager) {
-  m_glfw_manager = glfw_manager;
+void ControlSystem::SetOnInputPlayer(const std::function<void(int, float)> on_input_player) {
+  m_on_input_player = on_input_player;
 }
 
-void ControlSystem::SetUpdate(const std::function<void(int, float)> update) {
-  m_update = update;
+void ControlSystem::SetOnInputGlobal(const std::function<void(float)> on_input_global) {
+  m_on_input_global = on_input_global;
 }
