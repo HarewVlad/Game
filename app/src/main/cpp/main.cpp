@@ -225,15 +225,26 @@ int main() {
   player_animation.Add((int)PlayerState::RUN, player_run);
 
   Box player_box;
+  VertexBuffer player_vertex_buffer;
   VertexArray player_vertex_array;
   float player_width = player_idle[0].m_width;
   float player_height = player_idle[0].m_height;
+
+  float player_vertices[] = {0, 0, 0.0f, 0.0f,
+                         0, player_height,  0.0f, 1.0f,
+                         player_width,  player_height,  1.0f, 1.0f,
+                         player_width,  0, 1.0f, 0.0f};
+
+  float player_vertices_flipped[] = {0, 0, 1.0f, 0.0f,
+                     0, player_height,  1.0f, 1.0f,
+                     player_width,  player_height,  0.0f, 1.0f,
+                     player_width,  0, 0.0f, 0.0f};
+
   {
-    VertexBuffer vertex_buffer;
-    vertex_buffer.Initialize(player_width, player_height);
+    player_vertex_buffer.Initialize(player_width, player_height);
 
     player_vertex_array.Initialize();
-    player_vertex_array.AddBuffer(&vertex_buffer, &vertex_buffer_layout);
+    player_vertex_array.AddBuffer(&player_vertex_buffer, &vertex_buffer_layout);
 
     player_box.Initialize(&index_buffer, &player_vertex_array);
   }
@@ -370,7 +381,7 @@ int main() {
   entity_manager.AddBody(2 + enemies_count + 1, player_constraint_body);
   entity_manager.AddToCollision(2 + enemies_count + 1, 1);
 
-  // NOTE(Vlad): All under is just for the ability for me to write code here, i see it that way =)
+  // NOTE(Vlad): User defined code
 
   // Callbacks
   collision_system.SetOnNormalCollision([&](int a, int b) {
@@ -380,7 +391,7 @@ int main() {
 
   collision_system.SetOnBoundingCollision([&](int b) {
     Position &position = entity_manager.m_positions.Get(b);
-    if (b != 1) {
+    if (b != 1) { // TODO: Add complete list of objects
       position.m_position.x = 1 + rand() % arena_width;
       position.m_position.y = arena_height * 0.8f + rand() % arena_height * 0.9f;
     } else { // Player
@@ -401,10 +412,12 @@ int main() {
       movement.m_velocity.x -= 200.0f;
       state.m_value = (int)PlayerState::RUN;
       animation.SetAnimation((int)PlayerState::RUN);
+      player_vertex_buffer.BindData(&player_vertices_flipped, sizeof(player_vertices_flipped));
     } else if (glfw_manager.IsKeyPressed(GLFW_KEY_D)) {
       movement.m_velocity.x += 200.0f;
       state.m_value = (int)PlayerState::RUN;
       animation.SetAnimation((int)PlayerState::RUN);
+      player_vertex_buffer.BindData(&player_vertices, sizeof(player_vertices));
     } else {
       state.m_value = (int)PlayerState::IDLE;
       animation.SetAnimation((int)PlayerState::IDLE);
@@ -462,8 +475,6 @@ int main() {
 
     imgui_manager.RenderEnd();
   });
-
-  // TODO: How to create the logic for the game?
 
   Time time;
   time.Initialize();
