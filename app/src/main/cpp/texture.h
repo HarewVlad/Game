@@ -19,8 +19,3 @@ struct TextureMap {
   int key;
   Texture *value;
 };
-
-struct TextureArrayMap {
-  int key;
-  Texture **value;
-};

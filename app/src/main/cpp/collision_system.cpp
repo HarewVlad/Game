@@ -1,16 +1,16 @@
 void CollisionSystem::Initialize() {
 }
 
-void CollisionSystem::Update(int ida, int idb, Body *ba, Body *bb, Movement *ma, Movement *mb, float dt) {
+inline void CollisionSystem::Update(int ida, int idb, Body *ba, Body *bb, Position *pa, Position *pb, float dt) {
   if (ba->m_type == BodyType::NORMAL) { // NOTE(Vlad): If it is collision between normal AABBs
-    if (TestAABBAABB(ba, bb)) { // TODO: If physics applied - resolve, based on box2d-lite physics engine code
+    if (TestAABBAABB(ba, bb, pa, pb)) { // TODO: If physics applied - resolve, based on box2d-lite physics engine code
       if (m_on_collide_normal) {
         m_on_collide_normal(ida, idb);
       }
     }
   } 
   else if (ba->m_type == BodyType::BOUNDING) {
-    if (TestAABBInsideAABB(ba, bb)) {
+    if (TestAABBInsideAABB(ba, bb, pa, pb)) {
       if (m_on_collide_bounding) {
         m_on_collide_bounding(idb);
       }
@@ -26,14 +26,24 @@ void CollisionSystem::SetOnBoundingCollision(const std::function<void(int)> on_c
   m_on_collide_bounding = on_collide;
 }
 
-bool CollisionSystem::TestAABBAABB(Body *a, Body *b) {
-  if (a->m_max.x < b->m_min.x || a->m_min.x > b->m_max.x) return false;
-  if (a->m_max.y < b->m_min.y || a->m_min.y > b->m_max.y) return false;
+inline bool CollisionSystem::TestAABBAABB(Body *ba, Body *bb, Position *pa, Position *pb) {
+  int max_ax = pa->m_position.x + ba->m_size.x;
+  int max_ay = pa->m_position.y + ba->m_size.y;
+  int max_bx = pb->m_position.x + bb->m_size.x;
+  int max_by = pb->m_position.y + bb->m_size.y;
+
+  if (max_ax < pb->m_position.x || pa->m_position.x > max_bx) return false;
+  if (max_ay < pb->m_position.y || pa->m_position.y > max_by) return false;
   return true;
 }
 
-bool CollisionSystem::TestAABBInsideAABB(Body *bounding, Body *inner) {
-  if (bounding->m_min.x > inner->m_min.x || bounding->m_max.x < inner->m_max.x) return true;
-  if (bounding->m_min.y > inner->m_min.y || bounding->m_max.y < inner->m_max.y) return true;
+inline bool CollisionSystem::TestAABBInsideAABB(Body *bounding, Body *inner, Position *bounding_position, Position *inner_position) {
+  int max_boundingx = bounding_position->m_position.x + bounding->m_size.x;
+  int max_boundingy = bounding_position->m_position.y + bounding->m_size.y;
+  int max_innerx = inner_position->m_position.x + inner->m_size.x;
+  int max_innery = inner_position->m_position.y + inner->m_size.y;
+
+  if (bounding_position->m_position.x > inner_position->m_position.x || max_boundingx < max_innerx) return true;
+  if (bounding_position->m_position.y > inner_position->m_position.y || max_boundingy < max_innery) return true;
   return false;
 }

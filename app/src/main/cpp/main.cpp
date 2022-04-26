@@ -60,8 +60,8 @@ void Initialize() {
 
 // TODO: Rework code, make initialization the same for two platforms
 // TODO: Link Program and VertexBufferLayout together i guess?
-// TODO: Increase complexity, see something that is bad, (aslo allocate on stack)
 // TODO: Instead of return codes, just make and assertion and terminate the programm if error is hard
+// TODO: Texture batching, instance drawing
 
 #ifdef __ANDROID__
 void android_main(struct android_app *app) {
@@ -189,11 +189,11 @@ int main() {
   Position background_position;
   background_position.Initialize({0, 0});
 
-  entity_manager.AddBox(0, &background_box);
-  entity_manager.AddTexture(0, &background_texture);
-  entity_manager.AddProgram(0, &program);
-  entity_manager.AddPosition(0, &background_position);
-  entity_manager.AddToRenderer(0);
+  entity_manager.AddBox(0, background_box);
+  entity_manager.AddTexture(0, background_texture);
+  entity_manager.AddProgram(0, program);
+  entity_manager.AddPosition(0, background_position);
+  entity_manager.AddToRenderer(0, ImageType::TEXTURE);
 
   // Player
   enum class PlayerState {
@@ -250,15 +250,15 @@ int main() {
   Health player_health;
   player_health.Initialize(3);
 
-  entity_manager.AddBox(1, &player_box);
-  entity_manager.AddAnimation(1, &player_animation);
-  entity_manager.AddProgram(1, &program);
-  entity_manager.AddPosition(1, &player_position);
-  entity_manager.AddMovement(1, &player_movement);
-  entity_manager.AddBody(1, &player_body);
-  entity_manager.AddState(1, &player_state);
-  entity_manager.AddHealth(1, &player_health);
-  entity_manager.AddToRenderer(1);
+  entity_manager.AddBox(1, player_box);
+  entity_manager.AddAnimation(1, player_animation);
+  entity_manager.AddProgram(1, program);
+  entity_manager.AddPosition(1, player_position);
+  entity_manager.AddMovement(1, player_movement);
+  entity_manager.AddBody(1, player_body);
+  entity_manager.AddState(1, player_state);
+  entity_manager.AddHealth(1, player_health);
+  entity_manager.AddToRenderer(1, ImageType::ANIMATION);
   entity_manager.SetToControl(1);
   entity_manager.SetToInterface(1);
 
@@ -267,7 +267,10 @@ int main() {
   int arena_height = glfw_manager.m_height * 1.5f;
 
   // Bear, Bandit, Golem
-  Texture *enemy_run_textures[4] = {};
+  const int enemies_count = 20;
+  const int enemy_types = 4;
+
+  Texture *enemy_run_textures[enemy_types] = {};
 
   arrsetlen(enemy_run_textures[0], 4);
   for (int i = 0; i < arrlen(enemy_run_textures[0]); ++i) {
@@ -293,23 +296,18 @@ int main() {
     enemy_run_textures[3][i].Initialize(buffer);
   }
 
-  const int enemies_count = 15;
-
   Animation enemy_animations[enemies_count];
-  for (int i = 0; i < sizeof(enemy_animations) / sizeof(Animation); ++i) {
+  for (int i = 0; i < _countof(enemy_animations); ++i) {
     enemy_animations[i].Initialize();
-    enemy_animations[i].Add(0, enemy_run_textures[i % 4]);
+    enemy_animations[i].Add(0, enemy_run_textures[i % enemy_types]);
   }
 
   Box enemy_boxes[enemies_count];
   VertexArray enemy_vertex_arrays[enemies_count];
-  Position enemy_positions[enemies_count];
-  Movement enemy_movements[enemies_count];
-  Body enemy_bodies[enemies_count];
-  for (int i = 0; i < sizeof(enemy_boxes) / sizeof(Box); ++i) {
+  for (int i = 0; i < _countof(enemy_boxes); ++i) {
     // Box
-    float width = enemy_run_textures[i % 4][0].m_width;
-    float height = enemy_run_textures[i % 4][0].m_height;
+    float width = enemy_run_textures[i % enemy_types][0].m_width;
+    float height = enemy_run_textures[i % enemy_types][0].m_height;
     {
       VertexBuffer vertex_buffer;
       vertex_buffer.Initialize(width, height);
@@ -323,21 +321,26 @@ int main() {
     // Position
     int x = 1 + rand() % arena_width;
     int y = arena_height * 0.8f + rand() % arena_height * 0.9f;
-    enemy_positions[i].Initialize({x, y});
+
+    Position position;
+    position.Initialize({x, y});
 
     // Movement
-    enemy_movements[i].Initialize({10, 0}, {10, 0}, 1.0f, 0);
+    Movement movement;
+    movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
 
     // Body
-    enemy_bodies[i].Initialize(BodyType::NORMAL, {width, height});
+    Body body;
+    body.Initialize(BodyType::NORMAL, {width, height});
 
-    entity_manager.AddBox(i + 2, &enemy_boxes[i]);
-    entity_manager.AddAnimation(i + 2, &enemy_animations[i]);
-    entity_manager.AddProgram(i + 2, &program);
-    entity_manager.AddPosition(i + 2, &enemy_positions[i]);
-    entity_manager.AddMovement(i + 2, &enemy_movements[i]);
-    entity_manager.AddBody(i + 2, &enemy_bodies[i]);
-    entity_manager.AddToRenderer(i + 2);
+    // Entities
+    entity_manager.AddBox(i + 2, enemy_boxes[i]);
+    entity_manager.AddAnimation(i + 2, enemy_animations[i]);
+    entity_manager.AddProgram(i + 2, program);
+    entity_manager.AddPosition(i + 2, position);
+    entity_manager.AddMovement(i + 2, movement);
+    entity_manager.AddBody(i + 2, body);
+    entity_manager.AddToRenderer(i + 2, ImageType::ANIMATION);
     entity_manager.AddToPhysics(i + 2);
     entity_manager.AddToCollision(1, i + 2);
   }
@@ -349,50 +352,44 @@ int main() {
   Body arena_body;
   arena_body.Initialize(BodyType::BOUNDING, {arena_width, arena_height});
 
-  entity_manager.AddPosition(123456, &arena_position);
-  entity_manager.AddBody(123456, &arena_body);
+  entity_manager.AddPosition(2 + enemies_count, arena_position);
+  entity_manager.AddBody(2 + enemies_count, arena_body);
 
-  for (int i = 2; i < 2 + sizeof(enemy_bodies) / sizeof(Body); ++i) {
-    entity_manager.AddToCollision(123456, i);
+  for (int i = 2; i < 2 + enemies_count; ++i) {
+    entity_manager.AddToCollision(2 + enemies_count, i);
   }
-
-  // Test
-  // entity_manager.AddComponent(2, (int)Components::BOX, &bear_box);
-  // entity_manager.AddComponent(2, (int)Components::ANIMATION, &bear_animation);
-  // entity_manager.AddComponent(2, (int)Components::PROGRAM, &program);
-  // entity_manager.AddComponent(2, (int)Components::POSITION, &bear_position);
-  // entity_manager.AddComponent(2, (int)Components::MOVEMENT, &bear_movement);
-  // entity_manager.AddComponent(2, (int)Components::BODY, &bear_body);
 
   // NOTE(Vlad): All under is just for the ability for me to write code here, i see it that way =)
 
   // Callbacks
   collision_system.SetOnNormalCollision([&](int a, int b) {
-    Health *health = hmget(entity_manager.m_healths, a);
-
-    --health->m_value;
+    Health &health = entity_manager.m_healths[a];
+    --health.m_value;
   });
 
   collision_system.SetOnBoundingCollision([&](int b) {
-    Position *position = hmget(entity_manager.m_positions, b);
-
-    position->m_position.x = 1 + rand() % arena_width;
-    position->m_position.y = arena_height * 0.8f + rand() % arena_height * 0.9f;
+    Position &position = entity_manager.m_positions.Get(b);
+    position.m_position.x = 1 + rand() % arena_width;
+    position.m_position.y = arena_height * 0.8f + rand() % arena_height * 0.9f;
   });
 
   control_system.SetOnInputPlayer([&](int id, float dt) {
     // TODO: Movement based on box2d-lite later
-    Movement *movement = hmget(entity_manager.m_movements, id);
-    State *state = hmget(entity_manager.m_states, id);
+    Movement &movement = entity_manager.m_movements[id];
+    State &state = entity_manager.m_states.Get(id);
+    Animation &animation = entity_manager.m_animations.Get(id);
 
     if (glfw_manager.IsKeyPressed(GLFW_KEY_A)) { // TODO: Replace with InputManager later for Android and other
-      movement->m_velocity.x -= 200.0f;
-      state->m_value = (int)PlayerState::RUN;
+      movement.m_velocity.x -= 200.0f;
+      state.m_value = (int)PlayerState::RUN;
+      animation.SetAnimation((int)PlayerState::RUN);
     } else if (glfw_manager.IsKeyPressed(GLFW_KEY_D)) {
-      movement->m_velocity.x += 200.0f;
-      state->m_value = (int)PlayerState::RUN;
+      movement.m_velocity.x += 200.0f;
+      state.m_value = (int)PlayerState::RUN;
+      animation.SetAnimation((int)PlayerState::RUN);
     } else {
-      state->m_value = (int)PlayerState::IDLE;
+      state.m_value = (int)PlayerState::IDLE;
+      animation.SetAnimation((int)PlayerState::IDLE);
     }
   });
 
@@ -435,11 +432,10 @@ int main() {
       }
       break;
       case GameState::RUN: {
-        Health *health = hmget(entity_manager.m_healths, id);
+        Health health = entity_manager.m_healths[id];
         
-        ImGui::Text("Health: %d", health->m_value);
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        
+        ImGui::Text("Health: %d", health.m_value);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate); 
       }
       break;
     }

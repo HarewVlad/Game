@@ -1,6 +1,6 @@
 struct CameraSystem {
   void Initialize(GLFWManager *glfw_manager, Position *position);
-  glm::mat4 GetView();
+  inline glm::mat4 GetView();
 
   GLFWManager *m_glfw_manager;
   glm::mat4 m_view;

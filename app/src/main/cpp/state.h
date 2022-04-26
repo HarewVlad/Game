@@ -3,8 +3,3 @@ struct State {
 
   int m_value;
 };
-
-struct StateMap {
-  int key;
-  State *value;
-};

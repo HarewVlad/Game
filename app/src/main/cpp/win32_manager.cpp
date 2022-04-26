@@ -18,7 +18,9 @@ void Win32Manager::Run() {
     if (m_glfw_manager->IsWindowFocused()) {
       extra_time += time;
 
-      while (extra_time > frame_time) {
+      while (extra_time >= frame_time) {
+        glfwPollEvents();
+
         Update(frame_time / 1000.0f);
 
         extra_time -= frame_time;
@@ -27,10 +29,11 @@ void Win32Manager::Run() {
       Render();
     } else {
       Sleep(5);
+
+      glfwPollEvents();
     }
 
     glfwSwapBuffers(m_glfw_manager->m_window);
-    glfwPollEvents();
 
     /////// END FRAME ///////
 

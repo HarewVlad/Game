@@ -1,4 +1,4 @@
-enum class Components {
+enum class ComponentType {
   BOX,
   STATE,
   ANIMATION,
@@ -22,14 +22,30 @@ enum class Systems {
   COUNT
 };
 
-struct ComponentMap {
+struct IndexMap {
   int key;
-  void *value;
+  int value;
 };
 
+template <typename T>
 struct Component {
-  int key;
-  ComponentMap *value;
+  inline void Initialize() {
+    m_array = NULL;
+    m_indexes = NULL;
+  }
+
+  inline void Add(int id, T value) {
+    hmput(m_indexes, id, arrlen(m_array));
+    arrput(m_array, value);
+  }
+
+  inline T &Get(int id) {
+    int index = hmget(m_indexes, id);
+    return m_array[index];
+  }
+
+  T *m_array;
+  IndexMap *m_indexes;
 };
 
 struct EntityManager {
@@ -38,18 +54,18 @@ struct EntityManager {
                   CollisionSystem *collision_system,
                   FollowSystem *follow_system, ControlSystem *control_system,
                   InterfaceSystem *interface_system);
-  void AddAnimation(int id, Animation *animation);
-  void AddBox(int id, Box *box);
-  void AddProgram(int id, Program *program);
-  void AddTexture(int id, Texture *texture);
-  void AddPosition(int id, Position *position);
-  void AddMovement(int id, Movement *movement);
-  void AddBody(int id, Body *body);
-  void AddState(int id, State *state);
-  void AddHealth(int id, Health *health);
+  void AddAnimation(int id, Animation animation);
+  void AddBox(int id, Box box); // NOTE(Vlad): But VertexArray is still need to be existent in "main". Later need to copy it in Box structure like we do there
+  void AddProgram(int id, Program program);
+  void AddTexture(int id, Texture texture);
+  void AddPosition(int id, Position position);
+  void AddMovement(int id, Movement movement);
+  void AddBody(int id, Body body);
+  void AddState(int id, State state);
+  void AddHealth(int id, Health health);
 
   void AddToPhysics(int id);
-  void AddToRenderer(int id);
+  void AddToRenderer(int id, ImageType type);
   void
   AddToCollision(int a,
                  int b); // NOTE(Vlad) A - Object that wants to collide with B
@@ -60,53 +76,33 @@ struct EntityManager {
 
   void RemoveFromCollision(int id);
   void RemoveFromPhysics(int id);
-  void RemoveFromRender(int id);
   void RemoveFromControl(int id);
 
   void Update(float dt);
   void Render();
 
-  void AddComponent(int id, int type, void *data) {
-    // std::map<type, std::map<entity, type>>
-    ComponentMap *component_map = NULL;
-    if (hmgeti(m_components, type) >= 0) { // If component registered
-      component_map = hmget(m_components, type);
-      hmput(component_map, id, data);
-    } else {
-      hmput(component_map, id, data);
-    }
-    hmput(m_components, type, component_map);
-  }
-
-  void *GetComponent(int type, int id) {
-    if (hmgeti(m_components, type) >= 0) {
-      ComponentMap *component_map = m_components[type].value;
-      return component_map[id].value;
-    } else {
-      return NULL;
-    }
-  }
-
   void Old(float dt);
-  void New(float dt);
 
   // Components
-  AnimationMap *m_animations;
-  BoxMap *m_boxes;
-  ProgramMap *m_programs;
-  TextureMap *m_textures;
-  PositionMap *m_positions;
-  MovementMap *m_movements;
-  BodyMap *m_bodies;
-  StateMap *m_states;
-  HealthMap *m_healths;
+  Component<Animation> m_animations;
+  Component<Box> m_boxes;
+  Component<Program> m_programs;
+  Component<Texture> m_textures;
+  Component<Position> m_positions;
+  Movement *m_movements;
+  Component<Body> m_bodies;
+  Component<State> m_states;
+  Health *m_healths;
+
+  // TODO: Add ability to add custom components
+
 
   // Systems
   PhysicsSystem *m_physics_system;
   int *m_physics_system_ids;
 
   RendererSystem *m_renderer_system;
-  int *m_renderer_system_ids;
+  RendererData *m_renderer_system_data;
 
   CollisionSystem *m_collision_system;
   CollisionPair *m_collision_pairs;
@@ -123,8 +119,7 @@ struct EntityManager {
   InterfaceSystem *m_interface_system;
   int m_interface_system_id;
 
-  // Test
-  Component *m_components;
+  // TODO: Add ability to add custom systems
 };
 
 // map<int, array()

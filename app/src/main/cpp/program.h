@@ -11,8 +11,3 @@ struct Program {
 
   unsigned int m_id;
 };
-
-struct ProgramMap {
-  int key;
-  Program *value;
-};

@@ -55,7 +55,7 @@ bool GLFWManager::Initialize(int width, int height, const char *title) {
   glfwMakeContextCurrent(m_window);
   glfwSetFramebufferSizeCallback(m_window, FrameBufferSizeCallbackStatic);
   glfwSetKeyCallback(m_window, KeyCallbackStatic);
-  // glfwSwapInterval(1); // NOTE(Vlad): When setuped causes lag on mouse move or any input?
+  glfwSwapInterval(0);
 
   GLenum error = glewInit();
   if (error != GLEW_OK) {

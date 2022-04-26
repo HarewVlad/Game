@@ -1,6 +1,6 @@
 struct FollowSystem {
   void Initialize(GLFWManager *glfw_manager); // NOTE(Vlad): "a" follows "b"
-  void Update(Position *a, Position *b);
+  inline void Update(Position *a, Position *b);
 
   GLFWManager *m_glfw_manager;
 };

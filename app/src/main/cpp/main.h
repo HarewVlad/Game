@@ -9,6 +9,10 @@
 #include <functional>
 ///
 
+// C
+#include <stdlib.h>
+///
+
 #ifdef __ANDROID__
   #include <android/log.h>
   #include <android_native_app_glue.h>
@@ -36,7 +40,8 @@
 
 static bool Global_IsInitialized = false;
 static const glm::mat4 Global_Identity = glm::mat4(1.0f);
-static const int MAX_FPS = 120;
+static const int MAX_FPS = 60;
+static const int MIN_ALLOCATION_SIZE = 100;
 
 enum class GameState {
   MENU,

@@ -3,8 +3,3 @@ struct Health {
 
   int m_value;
 };
-
-struct HealthMap {
-  int key;
-  Health *value;
-};

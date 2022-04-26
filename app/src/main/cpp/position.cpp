@@ -10,7 +10,7 @@ void Position::MoveY(float y) {
   m_position.y += y;
 }
 
-glm::mat4 Position::GetModel() {
+inline glm::mat4 Position::GetModel() {
   return glm::translate(Global_Identity, glm::vec3(m_position, 0));
   // TODO: Add rotation and so on ...
 }
