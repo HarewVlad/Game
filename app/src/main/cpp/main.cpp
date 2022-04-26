@@ -359,6 +359,17 @@ int main() {
     entity_manager.AddToCollision(2 + enemies_count, i);
   }
 
+  // Player constraint
+  Position player_constraint_position;
+  player_constraint_position.Initialize({0, 0});
+
+  Body player_constraint_body;
+  player_constraint_body.Initialize(BodyType::BOUNDING, {glfw_manager.m_width, glfw_manager.m_height});
+
+  entity_manager.AddPosition(2 + enemies_count + 1, player_constraint_position);
+  entity_manager.AddBody(2 + enemies_count + 1, player_constraint_body);
+  entity_manager.AddToCollision(2 + enemies_count + 1, 1);
+
   // NOTE(Vlad): All under is just for the ability for me to write code here, i see it that way =)
 
   // Callbacks
@@ -369,8 +380,15 @@ int main() {
 
   collision_system.SetOnBoundingCollision([&](int b) {
     Position &position = entity_manager.m_positions.Get(b);
-    position.m_position.x = 1 + rand() % arena_width;
-    position.m_position.y = arena_height * 0.8f + rand() % arena_height * 0.9f;
+    if (b != 1) {
+      position.m_position.x = 1 + rand() % arena_width;
+      position.m_position.y = arena_height * 0.8f + rand() % arena_height * 0.9f;
+    } else { // Player
+      if (position.m_position.x < 0) // NOTE(Vlad): If we collided on left side.
+        position.m_position.x = glfw_manager.m_width * 0.95f;
+      else
+        position.m_position.x = 0;
+    }
   });
 
   control_system.SetOnInputPlayer([&](int id, float dt) {
