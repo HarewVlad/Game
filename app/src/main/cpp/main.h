@@ -1,13 +1,13 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_DS_IMPLEMENTATION
 #define GLEW_STATIC
+#define IMGUI_IMPL_OPENGL_LOADER_GLEW 
 
 // TODO: Rethink place to zero-initialize members of structs
 
 // C++
 #include <iostream>
 #include <functional>
-#include <unordered_map>
 ///
 
 // C
@@ -43,6 +43,8 @@ static bool Global_IsInitialized = false;
 static const glm::mat4 Global_Identity = glm::mat4(1.0f);
 static const int MAX_FPS = 60;
 static const int MIN_ALLOCATION_SIZE = 100;
+static const int WIDTH = 2560;
+static const int HEIGHT = 1440;
 
 enum class GameState {
   MENU,

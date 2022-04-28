@@ -7,15 +7,7 @@ void EntityManager::Initialize(CameraSystem *camera_system,
                                CollisionSystem *collision_system,
                                FollowSystem *follow_system,
                                ControlSystem *control_system, InterfaceSystem *interface_system) {
-  m_animations.Initialize();
-  m_boxes.Initialize();
-  m_states.Initialize();
-  m_programs.Initialize();
-  m_textures.Initialize();
-  m_positions.Initialize();
   m_movements = NULL;
-  m_bodies.Initialize();
-  m_healths.Initialize();
   m_physics_system = physics_system;
   m_physics_system_ids = NULL;
   m_renderer_system = renderer_system;
@@ -65,10 +57,6 @@ void EntityManager::AddBody(int id, Body body) {
 
 void EntityManager::AddState(int id, State state) {
   m_states.Add(id, state);
-}
-
-void EntityManager::AddHealth(int id, Health health) {
-  m_healths.Add(id, health);
 }
 
 void EntityManager::SetToCamera(int id) { m_camera_system_id = id; }
@@ -195,9 +183,8 @@ void EntityManager::Render() {
 
       Box box = m_boxes.Get(id);
       Position position = m_positions.Get(id);
-      Animation animation = m_animations.Get(id);
       Program program = m_programs.Get(id);
-      Texture texture = m_textures.Get(id);
+      Texture texture;
 
       m_renderer_system->RenderBoxBegin(&position, m_camera_system, &program);
 
@@ -205,10 +192,12 @@ void EntityManager::Render() {
 
       switch (image_type) {
         case ImageType::ANIMATION: {
+          Animation animation = m_animations.Get(id);
           texture = animation.GetCurrentTexture();
         }
         break;
-        case ImageType::TEXTURE: {          
+        case ImageType::TEXTURE: {
+          texture = m_textures.Get(id);   
         }
         break;
       }

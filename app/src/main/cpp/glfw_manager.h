@@ -5,7 +5,7 @@ struct KeyState {
 
 struct GLFWManager {
   GLFWManager();
-  bool Initialize(int width, int height, const char *title);
+  void Initialize(int width, int height, const char *title);
   void Shutdown();
   void FrameBufferSizeCallback(GLFWwindow *window, int width, int height);
   void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);

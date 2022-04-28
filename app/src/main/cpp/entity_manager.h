@@ -1,26 +1,26 @@
-enum class ComponentType {
-  BOX,
-  STATE,
-  ANIMATION,
-  PROGRAM,
-  TEXTURE,
-  POSITION,
-  MOVEMENT,
-  BODY,
+// enum class ComponentType {
+//   BOX,
+//   STATE,
+//   ANIMATION,
+//   PROGRAM,
+//   TEXTURE,
+//   POSITION,
+//   MOVEMENT,
+//   BODY,
 
-  COUNT
-};
+//   COUNT
+// };
 
-enum class Systems {
-  PHYSICS,
-  CONTROL,
-  CAMERA,
-  COLLISION,
-  RENDERER,
-  FOLLOW,
+// enum class Systems {
+//   PHYSICS,
+//   CONTROL,
+//   CAMERA,
+//   COLLISION,
+//   RENDERER,
+//   FOLLOW,
 
-  COUNT
-};
+//   COUNT
+// };
 
 struct IndexMap {
   int key;
@@ -29,24 +29,30 @@ struct IndexMap {
 
 template <typename T>
 struct Component {
-  inline void Initialize() {
+  Component() {
     m_array = NULL;
     m_indexes = NULL;
   }
 
   inline void Add(int id, T value) {
-    hmput(m_indexes, id, arrlen(m_array));
+    if (arrlen(m_indexes) < id) {
+      arrsetlen(m_indexes, id); // TODO: Make more efficient with allocations
+    }
+
+    arrins(m_indexes, id, arrlen(m_array));
     arrput(m_array, value);
   }
 
   inline T &Get(int id) {
-    int index = hmget(m_indexes, id);
+    int index = m_indexes[id];
     return m_array[index];
   }
 
   T *m_array;
-  IndexMap *m_indexes;
+  int *m_indexes;
 };
+
+#define CREATE(Type, Name) Component<Type> ##Name;
 
 struct EntityManager {
   void Initialize(CameraSystem *camera_system, RendererSystem *renderer_system,
@@ -62,7 +68,6 @@ struct EntityManager {
   void AddMovement(int id, Movement movement);
   void AddBody(int id, Body body);
   void AddState(int id, State state);
-  void AddHealth(int id, Health health);
 
   void AddToPhysics(int id);
   void AddToRenderer(int id, ImageType type);
@@ -92,10 +97,6 @@ struct EntityManager {
   Movement *m_movements;
   Component<Body> m_bodies;
   Component<State> m_states;
-  Component<Health> m_healths;
-
-  // TODO: Add ability to add custom components
-
 
   // Systems
   PhysicsSystem *m_physics_system;

@@ -62,6 +62,8 @@ void Initialize() {
 // TODO: Link Program and VertexBufferLayout together i guess?
 // TODO: Instead of return codes, just make and assertion and terminate the programm if error is hard
 // TODO: Texture batching, instance drawing
+// TODO: Generate background via shaders
+// TODO: Copy IndexBuffer and VertexArray to Box? 
 
 #ifdef __ANDROID__
 void android_main(struct android_app *app) {
@@ -77,17 +79,60 @@ void android_main(struct android_app *app) {
 }
 #elif defined _WIN32
 
+// NOTE(Vlad): User components
+
+CREATE(Health, HEALTH_COMPONENT); // NOTE(Vlad): Anyway user will be handling this components in main in callbacks, so global scope won't hurt
+
+// 
+void Test() {
+  
+}
+
 int main() {
+  Test();
+
   Initialize();
 
   GLFWManager glfw_manager;
-  if (!glfw_manager.Initialize(1920, 1080, "Game")) {
-    return -1;
-  }
+  glfw_manager.Initialize(WIDTH, HEIGHT, "Game");
 
   ImGuiManagerWin32 imgui_manager;
   imgui_manager.Initialize(glfw_manager.m_window);
 
+  IndexBuffer index_buffer;
+  index_buffer.Initialize();
+
+  VertexBufferLayout vertex_buffer_layout;
+  vertex_buffer_layout.Initialize();
+
+  // Systems
+  Position camera_position;
+  camera_position.Initialize({0, 0});
+
+  CameraSystem camera_system;
+  camera_system.Initialize(&glfw_manager, &camera_position);
+
+  RendererSystem renderer_system;
+  renderer_system.Initialize(&glfw_manager);
+
+  PhysicsSystem physics_system;
+  physics_system.Initialize({0, -18.8f});
+
+  CollisionSystem collision_system;
+  collision_system.Initialize();
+
+  FollowSystem follow_system;
+  follow_system.Initialize(&glfw_manager);
+
+  ControlSystem control_system;
+
+  InterfaceSystem interface_system;
+  interface_system.Initialize(&imgui_manager);
+
+  EntityManager entity_manager;
+  entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system, &control_system, &interface_system);
+
+  // Shaders
   Shader vertex_shader;
   {
     const char *vertex_shader_code = R"(#version 330 core
@@ -129,39 +174,6 @@ int main() {
     program.AddShader(&fragment_shader);
     program.Link();
   }
-
-  IndexBuffer index_buffer;
-  index_buffer.Initialize();
-
-  VertexBufferLayout vertex_buffer_layout;
-  vertex_buffer_layout.Initialize();
-
-  // Systems
-  Position camera_position;
-  camera_position.Initialize({0, 0});
-
-  CameraSystem camera_system;
-  camera_system.Initialize(&glfw_manager, &camera_position);
-
-  RendererSystem renderer_system;
-  renderer_system.Initialize(&glfw_manager);
-
-  PhysicsSystem physics_system;
-  physics_system.Initialize({0, -18.8f});
-
-  CollisionSystem collision_system;
-  collision_system.Initialize();
-
-  FollowSystem follow_system;
-  follow_system.Initialize(&glfw_manager);
-
-  ControlSystem control_system;
-
-  InterfaceSystem interface_system;
-  interface_system.Initialize(&imgui_manager);
-
-  EntityManager entity_manager;
-  entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system, &control_system, &interface_system);
 
   // Background
   Texture background_texture;
@@ -249,14 +261,16 @@ int main() {
     player_box.Initialize(&index_buffer, &player_vertex_array);
   }
 
+  const glm::vec2 player_scale = {1.5f, 1.5f};
+
   Position player_position;
-  player_position.Initialize({glfw_manager.m_width * 0.5f, 80});
+  player_position.Initialize({glfw_manager.m_width * 0.5f, 80}, player_scale);
 
   Movement player_movement;
   player_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
 
   Body player_body;
-  player_body.Initialize(BodyType::NORMAL, {player_width, player_height});
+  player_body.Initialize(BodyType::NORMAL, {player_width * player_scale.x, player_height * player_scale.y});
 
   Health player_health;
   player_health.Initialize(3);
@@ -268,17 +282,19 @@ int main() {
   entity_manager.AddMovement(1, player_movement);
   entity_manager.AddBody(1, player_body);
   entity_manager.AddState(1, player_state);
-  entity_manager.AddHealth(1, player_health);
   entity_manager.AddToRenderer(1, ImageType::ANIMATION);
   entity_manager.SetToControl(1);
   entity_manager.SetToInterface(1);
+
+  // Custom components
+  HEALTH_COMPONENT.Add(1, player_health);
 
   // Arena
   int arena_width = glfw_manager.m_width;
   int arena_height = glfw_manager.m_height * 1.5f;
 
   // Bear, Bandit, Golem
-  const int enemies_count = 10000;
+  const int enemies_count = 5000;
   const int enemy_types = 4;
 
   Texture *enemy_run_textures[enemy_types] = {};
@@ -385,7 +401,7 @@ int main() {
 
   // Callbacks
   collision_system.SetOnNormalCollision([&](int a, int b) {
-    Health &health = entity_manager.m_healths.Get(a);
+    Health &health = HEALTH_COMPONENT.Get(a);
     --health.m_value;
   });
 
@@ -463,8 +479,8 @@ int main() {
       }
       break;
       case GameState::RUN: {
-        Health health = entity_manager.m_healths.Get(id);
-        
+        const Health &health = HEALTH_COMPONENT.Get(id);
+
         ImGui::Text("Health: %d", health.m_value);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate); 
       }
@@ -475,6 +491,8 @@ int main() {
 
     imgui_manager.RenderEnd();
   });
+
+  // TODO: Static check whether elements and their components correlate with systems like entity_manager.Validate();
 
   Time time;
   time.Initialize();

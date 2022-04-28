@@ -35,10 +35,10 @@ void GLFWManager::KeyCallback(GLFWwindow *window, int key, int scancode, int act
 }
 
 // TODO: Remove returns and place asserts
-bool GLFWManager::Initialize(int width, int height, const char *title) {
+void GLFWManager::Initialize(int width, int height, const char *title) {
   if (!glfwInit()) {
     LOG(LOG_ERROR, "GLFWManager", "%s", "Unable to initialize GLFW");
-    return false;
+    assert(0);
   }
 
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -49,7 +49,7 @@ bool GLFWManager::Initialize(int width, int height, const char *title) {
   if (!m_window) {
     glfwTerminate();
     LOG(LOG_ERROR, "GLFWManager", "%s", "Unable to create GLFWwindow");
-    return false;
+    assert(0);
   }
 
   glfwMakeContextCurrent(m_window);
@@ -60,7 +60,7 @@ bool GLFWManager::Initialize(int width, int height, const char *title) {
   GLenum error = glewInit();
   if (error != GLEW_OK) {
     LOG(LOG_ERROR, "GLFWManager", "%s", "Unable to initialize GLEW");
-    return false;
+    assert(0);
   }
 
   m_width = width;
@@ -69,8 +69,6 @@ bool GLFWManager::Initialize(int width, int height, const char *title) {
       glm::ortho(0.0f, static_cast<float>(width), 0.0f,
                  static_cast<float>(height), -1000.0f, 1000.0f);
   m_key_state = NULL;
-
-  return true;
 }
 
 void GLFWManager::Shutdown() {
