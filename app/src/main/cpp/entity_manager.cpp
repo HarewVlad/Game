@@ -15,7 +15,7 @@ void EntityManager::Initialize(CameraSystem *camera_system,
   m_positions.Initialize();
   m_movements = NULL;
   m_bodies.Initialize();
-  m_healths = NULL;
+  m_healths.Initialize();
   m_physics_system = physics_system;
   m_physics_system_ids = NULL;
   m_renderer_system = renderer_system;
@@ -68,10 +68,7 @@ void EntityManager::AddState(int id, State state) {
 }
 
 void EntityManager::AddHealth(int id, Health health) {
-  if (id >= arrlen(m_healths)) {
-    arrsetlen(m_healths, id);
-  }
-  arrins(m_healths, id, health); 
+  m_healths.Add(id, health);
 }
 
 void EntityManager::SetToCamera(int id) { m_camera_system_id = id; }

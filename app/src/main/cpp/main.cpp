@@ -278,7 +278,7 @@ int main() {
   int arena_height = glfw_manager.m_height * 1.5f;
 
   // Bear, Bandit, Golem
-  const int enemies_count = 20;
+  const int enemies_count = 10000;
   const int enemy_types = 4;
 
   Texture *enemy_run_textures[enemy_types] = {};
@@ -385,7 +385,7 @@ int main() {
 
   // Callbacks
   collision_system.SetOnNormalCollision([&](int a, int b) {
-    Health &health = entity_manager.m_healths[a];
+    Health &health = entity_manager.m_healths.Get(a);
     --health.m_value;
   });
 
@@ -463,7 +463,7 @@ int main() {
       }
       break;
       case GameState::RUN: {
-        Health health = entity_manager.m_healths[id];
+        Health health = entity_manager.m_healths.Get(id);
         
         ImGui::Text("Health: %d", health.m_value);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate); 

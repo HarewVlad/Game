@@ -92,7 +92,7 @@ struct EntityManager {
   Movement *m_movements;
   Component<Body> m_bodies;
   Component<State> m_states;
-  Health *m_healths;
+  Component<Health> m_healths;
 
   // TODO: Add ability to add custom components
 
