@@ -46,6 +46,7 @@
 #include "physics_system.cpp"
 #include "imgui_manager.cpp"
 #include "interface_system.cpp"
+#include "score.cpp"
 #include "entity_manager.cpp"
 #ifdef __ANDROID__
   #include "imgui_manager_android.cpp"
@@ -79,13 +80,34 @@ void android_main(struct android_app *app) {
 }
 #elif defined _WIN32
 
-// NOTE(Vlad): User components
-
-CREATE(Health, HEALTH_COMPONENT); // NOTE(Vlad): Anyway user will be handling this components in main in callbacks, so global scope won't hurt
-
-// 
 void Test() {
+  // Texture *textures = NULL;
+
+  // char buffer[128];
+  // for (int i = 0; i < 4; ++i) {
+  //   (void)snprintf(buffer, 128, "..\\assets\\player\\idle\\%d.png", i);
+  //   Texture texture;
+  //   texture.Initialize(buffer);
+  //   arrput(textures, texture);
+  // }
+
+  // for (int i = 0; i < 8; ++i) {
+  //   (void)snprintf(buffer, 128, "..\\assets\\player\\run\\%d.png", i);
+  //   Texture texture;
+  //   texture.Initialize(buffer);
+  //   arrput(textures, texture);
+  // }
+
+  // AnimationRange animation_range = {4, 8};
+  // Animation animation; // NOTE(Vlad): Will be system later
+  // animation.Initialize();
+
+  // animation.Add(0, animation_range);
+  // while (true) {
+  //   animation.Update(textures, 1.0f);
+  // }
   
+  // Texture *texture = animation.GetTexture();
 }
 
 int main() {
@@ -116,7 +138,7 @@ int main() {
   renderer_system.Initialize(&glfw_manager);
 
   PhysicsSystem physics_system;
-  physics_system.Initialize({0, -18.8f});
+  physics_system.Initialize(GRAVITY);
 
   CollisionSystem collision_system;
   collision_system.Initialize();
@@ -131,6 +153,62 @@ int main() {
 
   EntityManager entity_manager;
   entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system, &control_system, &interface_system);
+
+  AnimationRange player_idle_range = {1, 5};
+  AnimationRange player_run_range = {5, 13};
+  AnimationRange animation_ranges[] = {{13, 17}, {17, 21}, {21, 27}, {27, 31}};
+
+  // All Textures TODO: REFACTOR
+  {
+    // Background
+    Texture texture;
+    texture.Initialize("..\\assets\\background.png");
+    arrput(entity_manager.m_textures, texture);
+
+    char buffer[128];
+    int index = 0;
+    for (int i = 0; i < 4; ++i) {
+      (void)snprintf(buffer, 128, "..\\assets\\player\\idle\\%d.png", i);
+
+      texture.Initialize(buffer);
+      entity_manager.AddTexture(index++, texture);
+      arrput(entity_manager.m_textures, texture);
+    }
+
+    for (int i = 0; i < 8; ++i) {
+      (void)snprintf(buffer, 128, "..\\assets\\player\\run\\%d.png", i);
+      texture.Initialize(buffer);
+      arrput(entity_manager.m_textures, texture);
+    }
+
+    for (int i = 0; i < 4; ++i) {
+      (void)snprintf(buffer, 128, "..\\assets\\bear\\%d.png", i);
+      texture.Initialize(buffer);
+      arrput(entity_manager.m_textures, texture);
+    }
+
+    for (int i = 0; i < 4; ++i) {
+      (void)snprintf(buffer, 128, "..\\assets\\bandit\\%d.png", i);
+      texture.Initialize(buffer);
+      arrput(entity_manager.m_textures, texture);
+    }
+
+    for (int i = 0; i < 6; ++i) {
+      (void)snprintf(buffer, 128, "..\\assets\\golem\\%d.png", i);
+      texture.Initialize(buffer);
+      arrput(entity_manager.m_textures, texture);
+    }
+
+    for (int i = 0; i < 4; ++i) {
+      (void)snprintf(buffer, 128, "..\\assets\\ent\\%d.png", i);
+      texture.Initialize(buffer);
+      arrput(entity_manager.m_textures, texture);
+    }
+  }
+
+  // Additional user components
+  Component<Health> health_components;
+  Component<Score> score_components;
 
   // Shaders
   Shader vertex_shader;
@@ -216,31 +294,16 @@ int main() {
   State player_state;
   player_state.Initialize((int)PlayerState::IDLE);
 
-  Texture *player_idle = NULL;
-  arrsetlen(player_idle, 4);
-  char buffer[128];
-  for (int i = 0; i < arrlen(player_idle); ++i) {
-    (void)snprintf(buffer, 128, "..\\assets\\player\\idle\\%d.png", i);
-    player_idle[i].Initialize(buffer);
-  }
-
-  Texture *player_run = NULL;
-  arrsetlen(player_run, 8);
-  for (int i = 0; i < arrlen(player_run); ++i) {
-    (void)snprintf(buffer, 128, "..\\assets\\player\\run\\%d.png", i);
-    player_run[i].Initialize(buffer);
-  }
-
   Animation player_animation;
   player_animation.Initialize();
-  player_animation.Add((int)PlayerState::IDLE, player_idle);
-  player_animation.Add((int)PlayerState::RUN, player_run);
+  player_animation.Add((int)PlayerState::IDLE, player_idle_range);
+  player_animation.Add((int)PlayerState::RUN, player_run_range);
 
   Box player_box;
   VertexBuffer player_vertex_buffer;
   VertexArray player_vertex_array;
-  float player_width = player_idle[0].m_width;
-  float player_height = player_idle[0].m_height;
+  float player_width = 100;
+  float player_height = 100;
 
   float player_vertices[] = {0, 0, 0.0f, 0.0f,
                          0, player_height,  0.0f, 1.0f,
@@ -261,19 +324,14 @@ int main() {
     player_box.Initialize(&index_buffer, &player_vertex_array);
   }
 
-  const glm::vec2 player_scale = {1.5f, 1.5f};
-
   Position player_position;
-  player_position.Initialize({glfw_manager.m_width * 0.5f, 80}, player_scale);
+  player_position.Initialize({glfw_manager.m_width * 0.5f, 80});
 
   Movement player_movement;
   player_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
 
   Body player_body;
-  player_body.Initialize(BodyType::NORMAL, {player_width * player_scale.x, player_height * player_scale.y});
-
-  Health player_health;
-  player_health.Initialize(3);
+  player_body.Initialize(BodyType::NORMAL, {player_width, player_height});
 
   entity_manager.AddBox(1, player_box);
   entity_manager.AddAnimation(1, player_animation);
@@ -286,55 +344,36 @@ int main() {
   entity_manager.SetToControl(1);
   entity_manager.SetToInterface(1);
 
-  // Custom components
-  HEALTH_COMPONENT.Add(1, player_health);
+  // Custom player components
+  Health player_health;
+  player_health.Initialize(3);
 
-  // Arena
+  Score player_score;
+  player_score.Initialize();
+
+  health_components.Add(1, player_health);
+  score_components.Add(1, player_score);
+
+  // Arena size
   int arena_width = glfw_manager.m_width;
   int arena_height = glfw_manager.m_height * 1.5f;
 
   // Bear, Bandit, Golem
-  const int enemies_count = 5000;
+  const int enemies_count = 10;
   const int enemy_types = 4;
-
-  Texture *enemy_run_textures[enemy_types] = {};
-
-  arrsetlen(enemy_run_textures[0], 4);
-  for (int i = 0; i < arrlen(enemy_run_textures[0]); ++i) {
-    (void)snprintf(buffer, 128, "..\\assets\\bear\\%d.png", i);
-    enemy_run_textures[0][i].Initialize(buffer);
-  }
-
-  arrsetlen(enemy_run_textures[1], 4);
-  for (int i = 0; i < arrlen(enemy_run_textures[1]); ++i) {
-    (void)snprintf(buffer, 128, "..\\assets\\bandit\\%d.png", i);
-    enemy_run_textures[1][i].Initialize(buffer);
-  }
-
-  arrsetlen(enemy_run_textures[2], 6);
-  for (int i = 0; i < arrlen(enemy_run_textures[2]); ++i) {
-    (void)snprintf(buffer, 128, "..\\assets\\golem\\%d.png", i);
-    enemy_run_textures[2][i].Initialize(buffer);
-  }
-
-  arrsetlen(enemy_run_textures[3], 4);
-  for (int i = 0; i < arrlen(enemy_run_textures[3]); ++i) {
-    (void)snprintf(buffer, 128, "..\\assets\\ent\\%d.png", i);
-    enemy_run_textures[3][i].Initialize(buffer);
-  }
 
   Animation enemy_animations[enemies_count];
   for (int i = 0; i < _countof(enemy_animations); ++i) {
     enemy_animations[i].Initialize();
-    enemy_animations[i].Add(0, enemy_run_textures[i % enemy_types]);
+    enemy_animations[i].Add(0, animation_ranges[i % enemy_types]);
   }
 
   Box enemy_boxes[enemies_count];
   VertexArray enemy_vertex_arrays[enemies_count];
   for (int i = 0; i < _countof(enemy_boxes); ++i) {
     // Box
-    float width = enemy_run_textures[i % enemy_types][0].m_width;
-    float height = enemy_run_textures[i % enemy_types][0].m_height;
+    float width = 50;
+    float height = 50;
     {
       VertexBuffer vertex_buffer;
       vertex_buffer.Initialize(width, height);
@@ -370,6 +409,14 @@ int main() {
     entity_manager.AddToRenderer(i + 2, ImageType::ANIMATION);
     entity_manager.AddToPhysics(i + 2);
     entity_manager.AddToCollision(1, i + 2);
+
+    // Score area // TODO: FIX BUG
+    // Body score_body;
+    // score_body.Initialize(BodyType::NORMAL, {width * 3, height * 3});
+
+    // entity_manager.AddPositionReference(i + 2 + enemies_count, i + 2);
+    // entity_manager.AddBody(i + 2 + enemies_count, score_body);
+    // entity_manager.AddToCollision(1, i + 2 + enemies_count);
   }
 
   // Arena
@@ -379,11 +426,11 @@ int main() {
   Body arena_body;
   arena_body.Initialize(BodyType::BOUNDING, {arena_width, arena_height});
 
-  entity_manager.AddPosition(2 + enemies_count, arena_position);
-  entity_manager.AddBody(2 + enemies_count, arena_body);
+  entity_manager.AddPosition(2 + enemies_count * 2, arena_position);
+  entity_manager.AddBody(2 + enemies_count * 2, arena_body);
 
   for (int i = 2; i < 2 + enemies_count; ++i) {
-    entity_manager.AddToCollision(2 + enemies_count, i);
+    entity_manager.AddToCollision(2 + enemies_count * 2, i);
   }
 
   // Player constraint
@@ -393,16 +440,16 @@ int main() {
   Body player_constraint_body;
   player_constraint_body.Initialize(BodyType::BOUNDING, {glfw_manager.m_width, glfw_manager.m_height});
 
-  entity_manager.AddPosition(2 + enemies_count + 1, player_constraint_position);
-  entity_manager.AddBody(2 + enemies_count + 1, player_constraint_body);
-  entity_manager.AddToCollision(2 + enemies_count + 1, 1);
-
-  // NOTE(Vlad): User defined code
+  entity_manager.AddPosition(2 + enemies_count * 2 + 1, player_constraint_position);
+  entity_manager.AddBody(2 + enemies_count * 2 + 1, player_constraint_body);
+  entity_manager.AddToCollision(2 + enemies_count * 2 + 1, 1);
 
   // Callbacks
   collision_system.SetOnNormalCollision([&](int a, int b) {
-    Health &health = HEALTH_COMPONENT.Get(a);
+    Health &health = health_components.Get(a);
+    Score &score = score_components.Get(a);
     --health.m_value;
+    ++score.m_value;
   });
 
   collision_system.SetOnBoundingCollision([&](int b) {
@@ -479,9 +526,12 @@ int main() {
       }
       break;
       case GameState::RUN: {
-        const Health &health = HEALTH_COMPONENT.Get(id);
+        const Health &health = health_components.Get(id);
+        const Score &score = score_components.Get(id);
 
         ImGui::Text("Health: %d", health.m_value);
+        ImGui::SetCursorPosX(glfw_manager.m_width / 2);
+        ImGui::Text("Score: %d", score.m_value);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate); 
       }
       break;

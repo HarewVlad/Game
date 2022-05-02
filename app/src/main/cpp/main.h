@@ -8,6 +8,7 @@
 // C++
 #include <iostream>
 #include <functional>
+#include <algorithm>
 ///
 
 // C
@@ -39,17 +40,19 @@
 #include "glm/gtx/transform.hpp"
 #include "glm/ext/matrix_clip_space.hpp"
 
-static bool Global_IsInitialized = false;
-static const glm::mat4 Global_Identity = glm::mat4(1.0f);
+static const glm::mat4 IDENTITY = glm::mat4(1.0f);
 static const int MAX_FPS = 60;
 static const int MIN_ALLOCATION_SIZE = 100;
 static const int WIDTH = 2560;
 static const int HEIGHT = 1440;
+static const glm::vec2 GRAVITY = {0, -10.0f};
 
 enum class GameState {
   MENU,
   RUN,
   // NOTE(Vlad): Insert your states
+  GAME_OVER,
+  //
   EXIT
 };
 
@@ -85,6 +88,7 @@ static GameState Global_GameState = GameState::MENU;
 #include "physics_system.h"
 #include "imgui_manager.h"
 #include "interface_system.h"
+#include "score.h"
 #include "entity_manager.h"
 #ifdef __ANDROID__
   #include "imgui_manager_android.h"

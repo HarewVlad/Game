@@ -4,5 +4,5 @@ void Position::Initialize(const glm::vec2 &position, const glm::vec2 &scale) {
 }
 
 inline glm::mat4 Position::GetModel() {
-  return glm::translate(Global_Identity, glm::vec3(m_position, 0)) * glm::scale(Global_Identity, glm::vec3(m_scale, 1.0f));
+  return glm::translate(IDENTITY, glm::vec3(m_position, 0)) * glm::scale(IDENTITY, glm::vec3(m_scale, 1.0f));
 }

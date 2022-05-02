@@ -1,5 +1,5 @@
 void CameraSystem::Initialize(GLFWManager *glfw_manager, Position *position) {
-  m_view = Global_Identity;
+  m_view = IDENTITY;
   m_glfw_manager = glfw_manager;
   m_position = position;
 }

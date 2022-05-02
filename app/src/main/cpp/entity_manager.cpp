@@ -22,6 +22,8 @@ void EntityManager::Initialize(CameraSystem *camera_system,
   m_control_system_id = -1;
   m_interface_system = interface_system;
   m_interface_system_id = -1;
+
+  m_textures = NULL;
 }
 
 void EntityManager::AddAnimation(int id, Animation animation) {
@@ -37,11 +39,15 @@ void EntityManager::AddProgram(int id, Program program) {
 }
 
 void EntityManager::AddTexture(int id, Texture texture) {
-  m_textures.Add(id, texture);
+  // m_textures.Add(id, texture);
 }
 
 void EntityManager::AddPosition(int id, Position position) {
   m_positions.Add(id, position);
+}
+
+void EntityManager::AddPositionReference(int ida, int idb) {
+  m_positions.AddReference(ida, idb);
 }
 
 void EntityManager::AddMovement(int id, Movement movement) {
@@ -104,7 +110,7 @@ void EntityManager::Old(float dt) {
   }
 
   for (int i = 0; i < arrlen(m_animations.m_array); ++i) {
-    m_animations.m_array[i].Update(dt); // TODO: Move to system
+    m_animations.m_array[i].Update(dt);
   }
 
   // Systems
@@ -152,9 +158,6 @@ void EntityManager::Old(float dt) {
 }
 
 void EntityManager::Update(float dt) {
-  ////// Test //////
-
-  // Components
   static double accumulator = 0.0;
   static int count = 0;
   StartCounter();
@@ -193,11 +196,13 @@ void EntityManager::Render() {
       switch (image_type) {
         case ImageType::ANIMATION: {
           Animation animation = m_animations.Get(id);
-          texture = animation.GetCurrentTexture();
+
+          int index = animation.GetIndex();
+          texture = m_textures[index];
         }
         break;
         case ImageType::TEXTURE: {
-          texture = m_textures.Get(id);   
+          texture = m_textures[id];   
         }
         break;
       }

@@ -1,32 +1,34 @@
 void Animation::Initialize() {
-  m_textures = NULL;
+  m_animation_map = NULL;
   m_index = 0;
   m_id = 0;
   m_time = 0.0f;
 }
 
-void Animation::Add(int id, Texture *textures) {
-  hmput(m_textures, id, textures);
+void Animation::Add(int id, AnimationRange animation_range) {
+  hmput(m_animation_map, id, animation_range);
 }
 
 inline void Animation::SetAnimation(int id) {
   if (m_id != id) {
     m_id = id;
-    m_index = 0;
+    m_time = 0;
   }
 }
 
-void Animation::Update(float dt) { // NOTE(Vlad): In case when animation doesn't have any state
-  Texture *textures = hmget(m_textures, m_id);
-  if (m_time > 1.0f / arrlen(textures)) {
-    m_index = (m_index + 1) % arrlen(textures);
+void Animation::Update(float dt) {
+  AnimationRange range = hmget(m_animation_map, m_id);
+  int size = range.m_end - range.m_start;
+  if (m_time > 1.0f / size) {
+    m_index = (m_index + 1) % size;
     m_time = 0.0f;
   } else {
     m_time += dt;
   }
 }
 
-Texture &Animation::GetCurrentTexture() {
-  Texture *textures = hmget(m_textures, m_id);
-  return textures[m_index];
+int Animation::GetIndex() {
+  AnimationRange range = hmget(m_animation_map, m_id);
+
+  return m_index + range.m_start;
 }

@@ -22,11 +22,6 @@
 //   COUNT
 // };
 
-struct IndexMap {
-  int key;
-  int value;
-};
-
 template <typename T>
 struct Component {
   Component() {
@@ -43,8 +38,23 @@ struct Component {
     arrput(m_array, value);
   }
 
+  inline void AddReference(int ida, int idb) { // NOTE(Vlad): ida want to stick to idb component
+    if (arrlen(m_indexes) < ida) {
+      arrsetlen(m_indexes, ida);
+    }
+
+    arrins(m_indexes, ida, idb);
+  }
+
+  inline void Remove(int id) {
+    int index = m_indexes[id];
+    arrdel(m_array, index);
+    arrdel(m_indexes, id);
+  }
+
   inline T &Get(int id) {
     int index = m_indexes[id];
+    int length = arrlen(m_indexes);
     return m_array[index];
   }
 
@@ -52,7 +62,9 @@ struct Component {
   int *m_indexes;
 };
 
-#define CREATE(Type, Name) Component<Type> ##Name;
+// #define CREATE_COMPONENT(Type) Component<Type> ##Type##Components;
+// #define ADD_COMPONENT(Type, Id, Value) Type##Components.Add(Id, Value);
+// #define GET_COMPONENT(Type, Id) Type##Components.Get(Id);
 
 struct EntityManager {
   void Initialize(CameraSystem *camera_system, RendererSystem *renderer_system,
@@ -65,6 +77,7 @@ struct EntityManager {
   void AddProgram(int id, Program program);
   void AddTexture(int id, Texture texture);
   void AddPosition(int id, Position position);
+  void AddPositionReference(int ida, int idb);
   void AddMovement(int id, Movement movement);
   void AddBody(int id, Body body);
   void AddState(int id, State state);
@@ -92,11 +105,12 @@ struct EntityManager {
   Component<Animation> m_animations;
   Component<Box> m_boxes;
   Component<Program> m_programs;
-  Component<Texture> m_textures;
   Component<Position> m_positions;
   Movement *m_movements;
   Component<Body> m_bodies;
   Component<State> m_states;
+
+  Texture *m_textures;
 
   // Systems
   PhysicsSystem *m_physics_system;
@@ -122,5 +136,3 @@ struct EntityManager {
 
   // TODO: Add ability to add custom systems
 };
-
-// map<int, array()

@@ -1,19 +1,25 @@
 // TODO: Make it AnimationSystem and take just sprites and ids
 
-struct Animation {
-  void Initialize();
-  void Add(int id, Texture *textures);
-  inline void Update(float dt);
-  inline Texture &GetCurrentTexture();
-  inline void SetAnimation(int id);
-
-  TextureMap *m_textures;
-  int m_id;
-  int m_index;
-  float m_time;
+struct AnimationRange {
+  int m_start;
+  int m_end;
 };
 
 struct AnimationMap {
   int key;
-  Animation *value;
+  AnimationRange value;
+};
+
+struct Animation {
+  void Initialize();
+  void Add(int id, AnimationRange animation_range);
+  inline void Update(float dt);
+  inline void SetAnimation(int id);
+  inline int GetIndex();
+
+  AnimationMap *m_animation_map;
+
+  int m_id;
+  int m_index;
+  float m_time;
 };
