@@ -154,57 +154,20 @@ int main() {
   EntityManager entity_manager;
   entity_manager.Initialize(&camera_system, &renderer_system, &physics_system, &collision_system, &follow_system, &control_system, &interface_system);
 
-  AnimationRange player_idle_range = {1, 5};
-  AnimationRange player_run_range = {5, 13};
-  AnimationRange animation_ranges[] = {{13, 17}, {17, 21}, {21, 27}, {27, 31}};
+  // Background
+  Texture texture;
+  texture.Initialize("..\\assets\\background.png");
+  entity_manager.AddTexture(texture);
 
-  // All Textures TODO: REFACTOR
-  {
-    // Background
-    Texture texture;
-    texture.Initialize("..\\assets\\background.png");
-    arrput(entity_manager.m_textures, texture);
+  // Animations
+  auto player_idle_range = entity_manager.AddTextures("..\\assets\\player\\idle\\%d.png", 4);
+  auto player_run_range = entity_manager.AddTextures("..\\assets\\player\\run\\%d.png", 8);
 
-    char buffer[128];
-    int index = 0;
-    for (int i = 0; i < 4; ++i) {
-      (void)snprintf(buffer, 128, "..\\assets\\player\\idle\\%d.png", i);
-
-      texture.Initialize(buffer);
-      entity_manager.AddTexture(index++, texture);
-      arrput(entity_manager.m_textures, texture);
-    }
-
-    for (int i = 0; i < 8; ++i) {
-      (void)snprintf(buffer, 128, "..\\assets\\player\\run\\%d.png", i);
-      texture.Initialize(buffer);
-      arrput(entity_manager.m_textures, texture);
-    }
-
-    for (int i = 0; i < 4; ++i) {
-      (void)snprintf(buffer, 128, "..\\assets\\bear\\%d.png", i);
-      texture.Initialize(buffer);
-      arrput(entity_manager.m_textures, texture);
-    }
-
-    for (int i = 0; i < 4; ++i) {
-      (void)snprintf(buffer, 128, "..\\assets\\bandit\\%d.png", i);
-      texture.Initialize(buffer);
-      arrput(entity_manager.m_textures, texture);
-    }
-
-    for (int i = 0; i < 6; ++i) {
-      (void)snprintf(buffer, 128, "..\\assets\\golem\\%d.png", i);
-      texture.Initialize(buffer);
-      arrput(entity_manager.m_textures, texture);
-    }
-
-    for (int i = 0; i < 4; ++i) {
-      (void)snprintf(buffer, 128, "..\\assets\\ent\\%d.png", i);
-      texture.Initialize(buffer);
-      arrput(entity_manager.m_textures, texture);
-    }
-  }
+  Range enemy_animation_ranges[4];
+  enemy_animation_ranges[0] = entity_manager.AddTextures("..\\assets\\bear\\%d.png", 4);
+  enemy_animation_ranges[1] = entity_manager.AddTextures("..\\assets\\bandit\\%d.png", 4);
+  enemy_animation_ranges[2] = entity_manager.AddTextures("..\\assets\\golem\\%d.png", 6);
+  enemy_animation_ranges[3] = entity_manager.AddTextures("..\\assets\\ent\\%d.png", 4);
 
   // Additional user components
   Component<Health> health_components;
@@ -254,9 +217,6 @@ int main() {
   }
 
   // Background
-  Texture background_texture;
-  background_texture.Initialize("..\\assets\\background.png");
-
   Box background_box;
   VertexArray background_vertex_array;
   float background_width = glfw_manager.m_width;
@@ -280,7 +240,6 @@ int main() {
   background_position.Initialize({0, 0});
 
   entity_manager.AddBox(0, background_box);
-  entity_manager.AddTexture(0, background_texture);
   entity_manager.AddProgram(0, program);
   entity_manager.AddPosition(0, background_position);
   entity_manager.AddToRenderer(0, ImageType::TEXTURE);
@@ -365,7 +324,7 @@ int main() {
   Animation enemy_animations[enemies_count];
   for (int i = 0; i < _countof(enemy_animations); ++i) {
     enemy_animations[i].Initialize();
-    enemy_animations[i].Add(0, animation_ranges[i % enemy_types]);
+    enemy_animations[i].Add(0, enemy_animation_ranges[i % enemy_types]);
   }
 
   Box enemy_boxes[enemies_count];

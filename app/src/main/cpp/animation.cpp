@@ -5,8 +5,8 @@ void Animation::Initialize() {
   m_time = 0.0f;
 }
 
-void Animation::Add(int id, AnimationRange animation_range) {
-  hmput(m_animation_map, id, animation_range);
+void Animation::Add(int id, Range range) {
+  hmput(m_animation_map, id, range);
 }
 
 inline void Animation::SetAnimation(int id) {
@@ -17,7 +17,7 @@ inline void Animation::SetAnimation(int id) {
 }
 
 void Animation::Update(float dt) {
-  AnimationRange range = hmget(m_animation_map, m_id);
+  Range range = hmget(m_animation_map, m_id);
   int size = range.m_end - range.m_start;
   if (m_time > 1.0f / size) {
     m_index = (m_index + 1) % size;
@@ -28,7 +28,7 @@ void Animation::Update(float dt) {
 }
 
 int Animation::GetIndex() {
-  AnimationRange range = hmget(m_animation_map, m_id);
+  Range range = hmget(m_animation_map, m_id);
 
   return m_index + range.m_start;
 }

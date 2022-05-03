@@ -72,10 +72,10 @@ struct EntityManager {
                   CollisionSystem *collision_system,
                   FollowSystem *follow_system, ControlSystem *control_system,
                   InterfaceSystem *interface_system);
-  void AddAnimation(int id, Animation animation);
+  void AddAnimation(int id, Animation animation); // TODO: Later replace with AnimationRange AddAnimation(...)
   void AddBox(int id, Box box); // NOTE(Vlad): But VertexArray is still need to be existent in "main". Later need to copy it in Box structure like we do there
   void AddProgram(int id, Program program);
-  void AddTexture(int id, Texture texture);
+  void AddTexture(Texture texture);
   void AddPosition(int id, Position position);
   void AddPositionReference(int ida, int idb);
   void AddMovement(int id, Movement movement);
@@ -101,6 +101,22 @@ struct EntityManager {
 
   void Old(float dt);
 
+  // Test
+  Range AddTextures(const char *fmt, int size) {
+    Range result = {arrlen(m_textures), arrlen(m_textures) + size};
+
+    char buffer[256];
+    for (int i = 0; i < size; ++i) {
+      (void)snprintf(buffer, 256, fmt, i);
+
+      Texture texture;
+      texture.Initialize(buffer);
+      AddTexture(texture);
+    }
+
+    return result;
+  }
+
   // Components
   Component<Animation> m_animations;
   Component<Box> m_boxes;
@@ -109,7 +125,6 @@ struct EntityManager {
   Movement *m_movements;
   Component<Body> m_bodies;
   Component<State> m_states;
-
   Texture *m_textures;
 
   // Systems

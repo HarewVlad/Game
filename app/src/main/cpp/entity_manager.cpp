@@ -22,7 +22,6 @@ void EntityManager::Initialize(CameraSystem *camera_system,
   m_control_system_id = -1;
   m_interface_system = interface_system;
   m_interface_system_id = -1;
-
   m_textures = NULL;
 }
 
@@ -38,8 +37,8 @@ void EntityManager::AddProgram(int id, Program program) {
   m_programs.Add(id, program);
 }
 
-void EntityManager::AddTexture(int id, Texture texture) {
-  // m_textures.Add(id, texture);
+void EntityManager::AddTexture(Texture texture) {
+  arrput(m_textures, texture);
 }
 
 void EntityManager::AddPosition(int id, Position position) {

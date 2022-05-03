@@ -1,18 +1,18 @@
 // TODO: Make it AnimationSystem and take just sprites and ids
 
-struct AnimationRange {
+struct Range {
   int m_start;
   int m_end;
 };
 
 struct AnimationMap {
   int key;
-  AnimationRange value;
+  Range value;
 };
 
 struct Animation {
   void Initialize();
-  void Add(int id, AnimationRange animation_range);
+  void Add(int id, Range range);
   inline void Update(float dt);
   inline void SetAnimation(int id);
   inline int GetIndex();
