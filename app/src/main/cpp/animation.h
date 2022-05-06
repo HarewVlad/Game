@@ -13,9 +13,9 @@ struct AnimationMap {
 struct Animation {
   void Initialize();
   void Add(int id, Range range);
-  inline void Update(float dt);
-  inline void SetAnimation(int id);
-  inline int GetIndex();
+  void Update(float dt);
+  void SetAnimation(int id);
+  int GetIndex();
 
   AnimationMap *m_animation_map;
 

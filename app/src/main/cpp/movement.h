@@ -1,6 +1,6 @@
 struct Movement {
   void Initialize(const glm::vec2 &velocity, const glm::vec2 &acceleration, float mass, float damping);
-  inline void Update(Position *position, float dt);
+  void Update(Position *position, float dt);
 
   glm::vec2 m_velocity;
   glm::vec2 m_acceleration;

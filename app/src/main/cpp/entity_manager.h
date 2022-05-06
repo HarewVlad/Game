@@ -72,29 +72,38 @@ struct EntityManager {
                   CollisionSystem *collision_system,
                   FollowSystem *follow_system, ControlSystem *control_system,
                   InterfaceSystem *interface_system);
-  void AddAnimation(int id, Animation animation); // TODO: Later replace with AnimationRange AddAnimation(...)
-  void AddBox(int id, Box box); // NOTE(Vlad): But VertexArray is still need to be existent in "main". Later need to copy it in Box structure like we do there
-  void AddProgram(int id, Program program);
-  void AddTexture(Texture texture);
-  void AddPosition(int id, Position position);
+  void AddAnimation(int id, const Animation &animation); // TODO: Later replace with AnimationRange AddAnimation(...)
+  void AddAnimation(const Animation &animation);
+  void AddBox(int id, const Box &box); // NOTE(Vlad): But VertexArray is still need to be existent in "main". Later need to copy it in Box structure like we do there
+  void AddBox(const Box &box);
+  void AddProgram(int id, const Program &program);
+  void AddProgram(const Program &program);
+  void AddTexture(const Texture &texture);
+  Range AddTextures(const char *fmt, int size);
+  void AddPosition(int id, const Position &position);
+  void AddPosition(const Position &position);
   void AddPositionReference(int ida, int idb);
-  void AddMovement(int id, Movement movement);
-  void AddBody(int id, Body body);
-  void AddState(int id, State state);
+  void AddMovement(int id, const Movement &movement);
+  void AddMovement(const Movement &movement);
+  void AddBody(int id, const Body &body);
+  void AddBody(const Body &body);
+  void AddState(int id, const State &state);
+  void AddState(const State &state);
 
   void AddToPhysics(int id);
+  void AddToPhysics();
   void AddToRenderer(int id, ImageType type);
+  void AddToRenderer(ImageType type);
   void
   AddToCollision(int a,
                  int b); // NOTE(Vlad) A - Object that wants to collide with B
   void SetToCamera(int id);
+  void SetToCamera();
   void SetToControl(int id);
+  void SetToControl();
   void SetToInterface(int id);
+  void SetToInterface();
   void AddToFollow(int a, int b); // NOTE(Vlad): A - Follower, B - The KING
-
-  void RemoveFromCollision(int id);
-  void RemoveFromPhysics(int id);
-  void RemoveFromControl(int id);
 
   void Update(float dt);
   void Render();
@@ -102,20 +111,11 @@ struct EntityManager {
   void Old(float dt);
 
   // Test
-  Range AddTextures(const char *fmt, int size) {
-    Range result = {arrlen(m_textures), arrlen(m_textures) + size};
-
-    char buffer[256];
-    for (int i = 0; i < size; ++i) {
-      (void)snprintf(buffer, 256, fmt, i);
-
-      Texture texture;
-      texture.Initialize(buffer);
-      AddTexture(texture);
-    }
-
-    return result;
+  void SetEntity(int id) {
+    m_id = id;
   }
+
+  int m_id;
 
   // Components
   Component<Animation> m_animations;

@@ -25,23 +25,23 @@ void EntityManager::Initialize(CameraSystem *camera_system,
   m_textures = NULL;
 }
 
-void EntityManager::AddAnimation(int id, Animation animation) {
+void EntityManager::AddAnimation(int id, const Animation &animation) {
   m_animations.Add(id, animation);
 }
 
-void EntityManager::AddBox(int id, Box box) {
+void EntityManager::AddBox(int id, const Box &box) {
   m_boxes.Add(id, box);
 }
 
-void EntityManager::AddProgram(int id, Program program) {
+void EntityManager::AddProgram(int id, const Program &program) {
   m_programs.Add(id, program);
 }
 
-void EntityManager::AddTexture(Texture texture) {
+void EntityManager::AddTexture(const Texture &texture) {
   arrput(m_textures, texture);
 }
 
-void EntityManager::AddPosition(int id, Position position) {
+void EntityManager::AddPosition(int id, const Position &position) {
   m_positions.Add(id, position);
 }
 
@@ -49,19 +49,47 @@ void EntityManager::AddPositionReference(int ida, int idb) {
   m_positions.AddReference(ida, idb);
 }
 
-void EntityManager::AddMovement(int id, Movement movement) {
+void EntityManager::AddMovement(int id, const Movement &movement) {
   if (id >= arrlen(m_movements)) {
     arrsetlen(m_movements, id);
   }
   arrins(m_movements, id, movement);
 }
 
-void EntityManager::AddBody(int id, Body body) {
+void EntityManager::AddBody(int id, const Body &body) {
   m_bodies.Add(id, body);
 }
 
-void EntityManager::AddState(int id, State state) {
+void EntityManager::AddState(int id, const State &state) {
   m_states.Add(id, state);
+}
+
+void EntityManager::AddAnimation(const Animation &animation) {
+  AddAnimation(m_id, animation);
+}
+
+void EntityManager::AddBox(const Box &box) {
+  AddBox(m_id, box);
+}
+
+void EntityManager::AddProgram(const Program &program) {
+  AddProgram(m_id, program);
+}
+
+void EntityManager::AddPosition(const Position &position) {
+  AddPosition(m_id, position);
+}
+
+void EntityManager::AddMovement(const Movement &movement) {
+  AddMovement(m_id, movement);
+}
+
+void EntityManager::AddBody(const Body &body) {
+  AddBody(m_id, body);
+}
+
+void EntityManager::AddState(const State &state) {
+  AddState(m_id, state);
 }
 
 void EntityManager::SetToCamera(int id) { m_camera_system_id = id; }
@@ -86,15 +114,39 @@ void EntityManager::AddToCollision(int a, int b) {
 
 void EntityManager::AddToFollow(int a, int b) { hmput(m_follow_map, a, b); }
 
-void EntityManager::RemoveFromCollision(int id) { arrdel(m_collision_pairs, id); }
+Range EntityManager::AddTextures(const char *fmt, int size) {
+  Range result = {arrlen(m_textures), arrlen(m_textures) + size};
 
-void EntityManager::RemoveFromPhysics(int id) {
-  for (int i = 0; i < arrlen(m_physics_system_ids); ++i) {
-    if (m_physics_system_ids[i] == id) {
-      arrdel(m_physics_system_ids, i);
-      break;
-    }
+  char buffer[256];
+  for (int i = 0; i < size; ++i) {
+    (void)snprintf(buffer, 256, fmt, i);
+
+    Texture texture;
+    texture.Initialize(buffer);
+    AddTexture(texture);
   }
+
+  return result;
+}
+
+void EntityManager::AddToPhysics() {
+  AddToPhysics(m_id);
+}
+
+void EntityManager::AddToRenderer(ImageType type) {
+  AddToRenderer(m_id, type);
+}
+
+void EntityManager::SetToCamera() {
+  SetToCamera(m_id);
+}
+
+void EntityManager::SetToControl() {
+  SetToControl(m_id);
+}
+
+void EntityManager::SetToInterface() {
+  SetToInterface(m_id);
 }
 
 void EntityManager::Old(float dt) {

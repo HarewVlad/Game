@@ -80,6 +80,14 @@ void android_main(struct android_app *app) {
 }
 #elif defined _WIN32
 
+int GetEnemyPositionX(int width) {
+  return 1 + rand() % width;
+}
+
+int GetEnemyPositionY(int height) {
+  return height * 0.8f + rand() % height * 0.9f;
+}
+
 void Test() {
   // Texture *textures = NULL;
 
@@ -160,18 +168,14 @@ int main() {
   entity_manager.AddTexture(texture);
 
   // Animations
-  auto player_idle_range = entity_manager.AddTextures("..\\assets\\player\\idle\\%d.png", 4);
-  auto player_run_range = entity_manager.AddTextures("..\\assets\\player\\run\\%d.png", 8);
+  Range player_idle_range = entity_manager.AddTextures("..\\assets\\player\\idle\\%d.png", 4);
+  Range player_run_range = entity_manager.AddTextures("..\\assets\\player\\run\\%d.png", 8);
 
   Range enemy_animation_ranges[4];
   enemy_animation_ranges[0] = entity_manager.AddTextures("..\\assets\\bear\\%d.png", 4);
   enemy_animation_ranges[1] = entity_manager.AddTextures("..\\assets\\bandit\\%d.png", 4);
   enemy_animation_ranges[2] = entity_manager.AddTextures("..\\assets\\golem\\%d.png", 6);
   enemy_animation_ranges[3] = entity_manager.AddTextures("..\\assets\\ent\\%d.png", 4);
-
-  // Additional user components
-  Component<Health> health_components;
-  Component<Score> score_components;
 
   // Shaders
   Shader vertex_shader;
@@ -239,10 +243,11 @@ int main() {
   Position background_position;
   background_position.Initialize({0, 0});
 
-  entity_manager.AddBox(0, background_box);
-  entity_manager.AddProgram(0, program);
-  entity_manager.AddPosition(0, background_position);
-  entity_manager.AddToRenderer(0, ImageType::TEXTURE);
+  entity_manager.SetEntity(0);
+  entity_manager.AddBox(background_box);
+  entity_manager.AddProgram(program);
+  entity_manager.AddPosition(background_position);
+  entity_manager.AddToRenderer(ImageType::TEXTURE);
 
   // Player
   enum class PlayerState {
@@ -292,16 +297,17 @@ int main() {
   Body player_body;
   player_body.Initialize(BodyType::NORMAL, {player_width, player_height});
 
-  entity_manager.AddBox(1, player_box);
-  entity_manager.AddAnimation(1, player_animation);
-  entity_manager.AddProgram(1, program);
-  entity_manager.AddPosition(1, player_position);
-  entity_manager.AddMovement(1, player_movement);
-  entity_manager.AddBody(1, player_body);
-  entity_manager.AddState(1, player_state);
-  entity_manager.AddToRenderer(1, ImageType::ANIMATION);
-  entity_manager.SetToControl(1);
-  entity_manager.SetToInterface(1);
+  entity_manager.SetEntity(1);
+  entity_manager.AddBox(player_box);
+  entity_manager.AddAnimation(player_animation);
+  entity_manager.AddProgram(program);
+  entity_manager.AddPosition(player_position);
+  entity_manager.AddMovement(player_movement);
+  entity_manager.AddBody(player_body);
+  entity_manager.AddState(player_state);
+  entity_manager.AddToRenderer(ImageType::ANIMATION);
+  entity_manager.SetToControl();
+  entity_manager.SetToInterface();
 
   // Custom player components
   Health player_health;
@@ -309,9 +315,6 @@ int main() {
 
   Score player_score;
   player_score.Initialize();
-
-  health_components.Add(1, player_health);
-  score_components.Add(1, player_score);
 
   // Arena size
   int arena_width = glfw_manager.m_width;
@@ -344,8 +347,8 @@ int main() {
     }
 
     // Position
-    int x = 1 + rand() % arena_width;
-    int y = arena_height * 0.8f + rand() % arena_height * 0.9f;
+    int x = GetEnemyPositionX(arena_width);
+    int y = GetEnemyPositionY(arena_height);
 
     Position position;
     position.Initialize({x, y});
@@ -359,23 +362,25 @@ int main() {
     body.Initialize(BodyType::NORMAL, {width, height});
 
     // Entities
-    entity_manager.AddBox(i + 2, enemy_boxes[i]);
-    entity_manager.AddAnimation(i + 2, enemy_animations[i]);
-    entity_manager.AddProgram(i + 2, program);
-    entity_manager.AddPosition(i + 2, position);
-    entity_manager.AddMovement(i + 2, movement);
-    entity_manager.AddBody(i + 2, body);
-    entity_manager.AddToRenderer(i + 2, ImageType::ANIMATION);
-    entity_manager.AddToPhysics(i + 2);
+    entity_manager.SetEntity(i + 2);
+    entity_manager.AddBox(enemy_boxes[i]);
+    entity_manager.AddAnimation(enemy_animations[i]);
+    entity_manager.AddProgram(program);
+    entity_manager.AddPosition(position);
+    entity_manager.AddMovement(movement);
+    entity_manager.AddBody(body);
+    entity_manager.AddToRenderer(ImageType::ANIMATION);
+    entity_manager.AddToPhysics();
     entity_manager.AddToCollision(1, i + 2);
 
     // Score area // TODO: FIX BUG
-    // Body score_body;
-    // score_body.Initialize(BodyType::NORMAL, {width * 3, height * 3});
+    Body score_body;
+    score_body.Initialize(BodyType::NORMAL, {width * 3, height * 3});
 
     // entity_manager.AddPositionReference(i + 2 + enemies_count, i + 2);
-    // entity_manager.AddBody(i + 2 + enemies_count, score_body);
-    // entity_manager.AddToCollision(1, i + 2 + enemies_count);
+    // entity_manager.AddPosition(i + 123123, position);
+    // entity_manager.AddBody(i + 123123, score_body);
+    // entity_manager.AddToCollision(1, i + 123123);
   }
 
   // Arena
@@ -385,11 +390,11 @@ int main() {
   Body arena_body;
   arena_body.Initialize(BodyType::BOUNDING, {arena_width, arena_height});
 
-  entity_manager.AddPosition(2 + enemies_count * 2, arena_position);
-  entity_manager.AddBody(2 + enemies_count * 2, arena_body);
+  entity_manager.AddPosition(2 + enemies_count, arena_position);
+  entity_manager.AddBody(2 + enemies_count, arena_body);
 
   for (int i = 2; i < 2 + enemies_count; ++i) {
-    entity_manager.AddToCollision(2 + enemies_count * 2, i);
+    entity_manager.AddToCollision(2 + enemies_count, i);
   }
 
   // Player constraint
@@ -405,17 +410,15 @@ int main() {
 
   // Callbacks
   collision_system.SetOnNormalCollision([&](int a, int b) {
-    Health &health = health_components.Get(a);
-    Score &score = score_components.Get(a);
-    --health.m_value;
-    ++score.m_value;
+    --player_health.m_value;
+    ++player_score.m_value;
   });
 
   collision_system.SetOnBoundingCollision([&](int b) {
     Position &position = entity_manager.m_positions.Get(b);
     if (b != 1) { // TODO: Add complete list of objects
-      position.m_position.x = 1 + rand() % arena_width;
-      position.m_position.y = arena_height * 0.8f + rand() % arena_height * 0.9f;
+      position.m_position.x = GetEnemyPositionX(arena_width);
+      position.m_position.y = GetEnemyPositionY(arena_height);
     } else { // Player
       if (position.m_position.x < 0) // NOTE(Vlad): If we collided on left side.
         position.m_position.x = glfw_manager.m_width * 0.95f;
@@ -425,7 +428,6 @@ int main() {
   });
 
   control_system.SetOnInputPlayer([&](int id, float dt) {
-    // TODO: Movement based on box2d-lite later
     Movement &movement = entity_manager.m_movements[id];
     State &state = entity_manager.m_states.Get(id);
     Animation &animation = entity_manager.m_animations.Get(id);
@@ -477,6 +479,26 @@ int main() {
           Global_GameState = GameState::RUN;
         }
         ImGui::SetCursorPosX(glfw_manager.m_width / 2.0f - button_size.x * 0.5f);
+        if (ImGui::Button("Reset", button_size)) {
+          // Player
+          player_health.Initialize(3);
+          player_score.Initialize();
+
+          // Enemies
+          for (int i = 0; i < enemies_count; ++i) {
+            Position &position = entity_manager.m_positions.Get(i + 2);
+            position.m_position.x = GetEnemyPositionX(arena_width);
+            position.m_position.y = GetEnemyPositionY(arena_height);
+
+            Movement &movement = entity_manager.m_movements[i + 2];
+            movement.m_velocity = {0, 0};
+            movement.m_acceleration = {0, 0};
+          }
+
+          Global_GameState = GameState::RUN;
+        }
+
+        ImGui::SetCursorPosX(glfw_manager.m_width / 2.0f - button_size.x * 0.5f);
         ImGui::Button("About", button_size);
         ImGui::SetCursorPosX(glfw_manager.m_width / 2.0f - button_size.x * 0.5f);
         if (ImGui::Button("Exit", button_size)) {
@@ -485,12 +507,9 @@ int main() {
       }
       break;
       case GameState::RUN: {
-        const Health &health = health_components.Get(id);
-        const Score &score = score_components.Get(id);
-
-        ImGui::Text("Health: %d", health.m_value);
+        ImGui::Text("Health: %d", player_health.m_value);
         ImGui::SetCursorPosX(glfw_manager.m_width / 2);
-        ImGui::Text("Score: %d", score.m_value);
+        ImGui::Text("Score: %d", player_score.m_value);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate); 
       }
       break;
