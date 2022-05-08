@@ -47,6 +47,7 @@
 #include "imgui_manager.cpp"
 #include "interface_system.cpp"
 #include "score.cpp"
+#include "effects/effect.cpp"
 #include "entity_manager.cpp"
 #ifdef __ANDROID__
   #include "imgui_manager_android.cpp"
@@ -56,15 +57,18 @@
 
 void Initialize() {
   srand(timeGetTime());
-  stbds_rand_seed(timeGetTime());
+  // stbds_rand_seed(timeGetTime());
 }
 
 // TODO: Rework code, make initialization the same for two platforms
 // TODO: Link Program and VertexBufferLayout together i guess?
 // TODO: Instead of return codes, just make and assertion and terminate the programm if error is hard
 // TODO: Texture batching, instance drawing
-// TODO: Generate background via shaders
-// TODO: Copy IndexBuffer and VertexArray to Box? 
+// TODO: Generate background via shaders?
+// TODO: Copy IndexBuffer and VertexArray to Box?
+// TODO: To minimize performance overhead, bind callbacks to entity ids?
+// TODO: Add ability to add custom systems
+// TODO: Make position centered, based of size of an object? (Helps with radius issue)
 
 #ifdef __ANDROID__
 void android_main(struct android_app *app) {
@@ -140,7 +144,7 @@ int main() {
   camera_position.Initialize({0, 0});
 
   CameraSystem camera_system;
-  camera_system.Initialize(&glfw_manager, &camera_position);
+  camera_system.Initialize(&camera_position);
 
   RendererSystem renderer_system;
   renderer_system.Initialize(&glfw_manager);
@@ -182,15 +186,15 @@ int main() {
   {
     const char *vertex_shader_code = R"(#version 330 core
                                      layout(location = 0) in vec4 position;
-                                     layout(location = 1) in vec2 tex;
+                                     layout(location = 1) in vec2 uv;
 
-                                     out vec2 v_Tex;
+                                     out vec2 v_UV;
 
                                      uniform mat4 u_MVP;
 
                                      void main() {
                                      gl_Position = u_MVP * position;
-                                     v_Tex = tex;
+                                     v_UV = uv;
                                      })";
     vertex_shader.Initialize(vertex_shader_code, GL_VERTEX_SHADER);
   }
@@ -201,13 +205,13 @@ int main() {
         precision mediump float;
         layout(location = 0) out vec4 color;
 
-        in vec2 v_Tex;
+        in vec2 v_UV;
 
         uniform sampler2D u_Texture;
 
         void main() {
-        vec4 texCoord = texture(u_Texture, v_Tex);
-        color = texCoord;
+        vec4 texture_vec4 = texture(u_Texture, v_UV);
+        color = texture_vec4;
         })";
     fragment_shader.Initialize(fragment_shader_code, GL_FRAGMENT_SHADER);
   }
@@ -250,6 +254,8 @@ int main() {
   entity_manager.AddToRenderer(ImageType::TEXTURE);
 
   // Player
+
+  // Custom player components
   enum class PlayerState {
     IDLE,
     RUN
@@ -257,6 +263,13 @@ int main() {
 
   State player_state;
   player_state.Initialize((int)PlayerState::IDLE);
+
+  Health player_health;
+  player_health.Initialize(3);
+
+  Score player_score;
+  player_score.Initialize();
+  //
 
   Animation player_animation;
   player_animation.Initialize();
@@ -297,6 +310,9 @@ int main() {
   Body player_body;
   player_body.Initialize(BodyType::NORMAL, {player_width, player_height});
 
+  EffectBlink player_effect_blink;
+  player_effect_blink.Initialize(1, 12.0f);
+
   entity_manager.SetEntity(1);
   entity_manager.AddBox(player_box);
   entity_manager.AddAnimation(player_animation);
@@ -304,17 +320,10 @@ int main() {
   entity_manager.AddPosition(player_position);
   entity_manager.AddMovement(player_movement);
   entity_manager.AddBody(player_body);
-  entity_manager.AddState(player_state);
   entity_manager.AddToRenderer(ImageType::ANIMATION);
+  entity_manager.AddBlink(1, player_effect_blink);
   entity_manager.SetToControl();
   entity_manager.SetToInterface();
-
-  // Custom player components
-  Health player_health;
-  player_health.Initialize(3);
-
-  Score player_score;
-  player_score.Initialize();
 
   // Arena size
   int arena_width = glfw_manager.m_width;
@@ -332,7 +341,7 @@ int main() {
 
   Box enemy_boxes[enemies_count];
   VertexArray enemy_vertex_arrays[enemies_count];
-  for (int i = 0; i < _countof(enemy_boxes); ++i) {
+  for (int i = 0; i < enemies_count; ++i) {
     // Box
     float width = 50;
     float height = 50;
@@ -408,42 +417,70 @@ int main() {
   entity_manager.AddBody(2 + enemies_count * 2 + 1, player_constraint_body);
   entity_manager.AddToCollision(2 + enemies_count * 2 + 1, 1);
 
+  auto GameReset = [&]() {
+    // Player
+    player_health.Initialize(3);
+    player_score.Initialize();
+
+    // Enemies
+    // TODO: Adequate method of storing and accessing entities through entity id
+    for (int i = 0; i < enemies_count; ++i) {
+      Position &position = entity_manager.m_positions.Value(i + 2);
+      position.m_xy.x = GetEnemyPositionX(arena_width);
+      position.m_xy.y = GetEnemyPositionY(arena_height);
+
+      Movement &movement = entity_manager.m_movements[i + 2];
+      movement.m_velocity = {0, 0};
+      movement.m_acceleration = {0, 0};
+    }
+
+    Global_GameState = GameState::RUN;
+  };
+
   // Callbacks
   collision_system.SetOnNormalCollision([&](int a, int b) {
-    --player_health.m_value;
-    ++player_score.m_value;
+    EffectBlink &player_effect_blink = entity_manager.m_effect_blinks.Value(a);
+    if (!player_effect_blink.IsExecuting()) {
+      --player_health.m_value;
+      ++player_score.m_value;
+
+      player_effect_blink.Start();
+    }
+
+    if (!player_health.m_value) {
+      GameReset();
+    }
   });
 
   collision_system.SetOnBoundingCollision([&](int b) {
-    Position &position = entity_manager.m_positions.Get(b);
+    Position &position = entity_manager.m_positions.Value(b);
     if (b != 1) { // TODO: Add complete list of objects
-      position.m_position.x = GetEnemyPositionX(arena_width);
-      position.m_position.y = GetEnemyPositionY(arena_height);
+      position.m_xy.x = GetEnemyPositionX(arena_width);
+      position.m_xy.y = GetEnemyPositionY(arena_height);
     } else { // Player
-      if (position.m_position.x < 0) // NOTE(Vlad): If we collided on left side.
-        position.m_position.x = glfw_manager.m_width * 0.95f;
+      if (position.m_xy.x < 0) // NOTE(Vlad): If we collided on left side.
+        position.m_xy.x = glfw_manager.m_width * 0.95f;
       else
-        position.m_position.x = 0;
+        position.m_xy.x = 0;
     }
   });
 
   control_system.SetOnInputPlayer([&](int id, float dt) {
     Movement &movement = entity_manager.m_movements[id];
-    State &state = entity_manager.m_states.Get(id);
-    Animation &animation = entity_manager.m_animations.Get(id);
+    Animation &animation = entity_manager.m_animations.Value(id);
 
     if (glfw_manager.IsKeyPressed(GLFW_KEY_A)) { // TODO: Replace with InputManager later for Android and other
       movement.m_velocity.x -= 200.0f;
-      state.m_value = (int)PlayerState::RUN;
+      player_state.m_value = (int)PlayerState::RUN;
       animation.SetAnimation((int)PlayerState::RUN);
       player_vertex_buffer.BindData(&player_vertices_flipped, sizeof(player_vertices_flipped));
     } else if (glfw_manager.IsKeyPressed(GLFW_KEY_D)) {
       movement.m_velocity.x += 200.0f;
-      state.m_value = (int)PlayerState::RUN;
+      player_state.m_value = (int)PlayerState::RUN;
       animation.SetAnimation((int)PlayerState::RUN);
       player_vertex_buffer.BindData(&player_vertices, sizeof(player_vertices));
     } else {
-      state.m_value = (int)PlayerState::IDLE;
+      player_state.m_value = (int)PlayerState::IDLE;
       animation.SetAnimation((int)PlayerState::IDLE);
     }
   });
@@ -480,22 +517,7 @@ int main() {
         }
         ImGui::SetCursorPosX(glfw_manager.m_width / 2.0f - button_size.x * 0.5f);
         if (ImGui::Button("Reset", button_size)) {
-          // Player
-          player_health.Initialize(3);
-          player_score.Initialize();
-
-          // Enemies
-          for (int i = 0; i < enemies_count; ++i) {
-            Position &position = entity_manager.m_positions.Get(i + 2);
-            position.m_position.x = GetEnemyPositionX(arena_width);
-            position.m_position.y = GetEnemyPositionY(arena_height);
-
-            Movement &movement = entity_manager.m_movements[i + 2];
-            movement.m_velocity = {0, 0};
-            movement.m_acceleration = {0, 0};
-          }
-
-          Global_GameState = GameState::RUN;
+          GameReset();
         }
 
         ImGui::SetCursorPosX(glfw_manager.m_width / 2.0f - button_size.x * 0.5f);
@@ -512,6 +534,8 @@ int main() {
         ImGui::Text("Score: %d", player_score.m_value);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate); 
       }
+      break;
+      default:
       break;
     }
     ImGui::PopStyleVar(2);

@@ -12,6 +12,5 @@ struct RendererSystem {
 };
 
 struct RendererData {
-  int id;
   ImageType type;
 };

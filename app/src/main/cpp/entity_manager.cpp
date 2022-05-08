@@ -12,6 +12,7 @@ void EntityManager::Initialize(CameraSystem *camera_system,
   m_physics_system_ids = NULL;
   m_renderer_system = renderer_system;
   m_renderer_system_data = NULL;
+  m_renderer_system_ids = NULL;
   m_collision_system = collision_system;
   m_collision_pairs = NULL;
   m_camera_system = camera_system;
@@ -23,6 +24,10 @@ void EntityManager::Initialize(CameraSystem *camera_system,
   m_interface_system = interface_system;
   m_interface_system_id = -1;
   m_textures = NULL;
+}
+
+void EntityManager::SetEntity(int id) {
+  m_id = id;
 }
 
 void EntityManager::AddAnimation(int id, const Animation &animation) {
@@ -46,7 +51,7 @@ void EntityManager::AddPosition(int id, const Position &position) {
 }
 
 void EntityManager::AddPositionReference(int ida, int idb) {
-  m_positions.AddReference(ida, idb);
+  // m_positions.AddReference(ida, idb);
 }
 
 void EntityManager::AddMovement(int id, const Movement &movement) {
@@ -58,10 +63,6 @@ void EntityManager::AddMovement(int id, const Movement &movement) {
 
 void EntityManager::AddBody(int id, const Body &body) {
   m_bodies.Add(id, body);
-}
-
-void EntityManager::AddState(int id, const State &state) {
-  m_states.Add(id, state);
 }
 
 void EntityManager::AddAnimation(const Animation &animation) {
@@ -88,10 +89,6 @@ void EntityManager::AddBody(const Body &body) {
   AddBody(m_id, body);
 }
 
-void EntityManager::AddState(const State &state) {
-  AddState(m_id, state);
-}
-
 void EntityManager::SetToCamera(int id) { m_camera_system_id = id; }
 
 void EntityManager::SetToControl(int id) { m_control_system_id = id; }
@@ -103,8 +100,9 @@ void EntityManager::SetToInterface(int id) {
 void EntityManager::AddToPhysics(int id) { arrput(m_physics_system_ids, id); }
 
 void EntityManager::AddToRenderer(int id, ImageType type) {
-  RendererData data = {id, type};; 
+  RendererData data = {type};
   arrput(m_renderer_system_data, data);
+  arrput(m_renderer_system_ids, 1);
 }
 
 void EntityManager::AddToCollision(int a, int b) {
@@ -155,13 +153,19 @@ void EntityManager::Old(float dt) {
   }
 
   for (int i = 0; i < arrlen(m_movements); ++i) {
-    Position &position = m_positions.Get(i);
+    Position &position = m_positions.Value(i);
 
     m_movements[i].Update(&position, dt); // TODO: Add Physics component instead of this, and make MovementSystem
   }
 
-  for (int i = 0; i < arrlen(m_animations.m_array); ++i) {
-    m_animations.m_array[i].Update(dt);
+  for (int i = 0; i < m_animations.Size(); ++i) {
+    m_animations.Value(i).Update(dt);
+  }
+
+  // Effects
+  for (int i = 0; i < m_effect_blinks.Size(); ++i) {
+    auto &pair = m_effect_blinks.GetPair(i);
+    pair.value.Update(&m_renderer_system_ids[pair.key], dt);
   }
 
   // Systems
@@ -184,25 +188,25 @@ void EntityManager::Old(float dt) {
   for (int i = 0; i < arrlen(m_collision_pairs); ++i) {
     int ida = m_collision_pairs[i].a;
     int idb = m_collision_pairs[i].b;
-    Body &ba = m_bodies.Get(ida);
-    Body &bb = m_bodies.Get(idb);
-    Position &pa = m_positions.Get(ida);
-    Position &pb = m_positions.Get(idb);
+    Body &ba = m_bodies.Value(ida);
+    Body &bb = m_bodies.Value(idb);
+    Position &pa = m_positions.Value(ida);
+    Position &pb = m_positions.Value(idb);
 
     m_collision_system->Update(ida, idb, &ba, &bb, &pa,
                                &pb, dt);
   }
 
   for (int i = 0; i < hmlen(m_follow_map); ++i) {
-    Position &a = m_positions.Get(m_follow_map[i].key);
-    Position &b = m_positions.Get(m_follow_map[i].value);
+    Position &a = m_positions.Value(m_follow_map[i].key);
+    Position &b = m_positions.Value(m_follow_map[i].value);
 
     m_follow_system->Update(&a, &b);
   }
 
   if (m_camera_system_id != -1) {
     Position *a = m_camera_system->m_position;
-    Position &b = m_positions.Get(m_camera_system_id);
+    Position &b = m_positions.Value(m_camera_system_id);
 
     m_follow_system->Update(a, &b);
   }
@@ -224,55 +228,61 @@ void EntityManager::Update(float dt) {
   }
 }
 
+void EntityManager::RenderGame() {
+  for (int id = 0; id < arrlen(m_renderer_system_ids); ++id) {
+    if (!m_renderer_system_ids[id]) {
+      continue;
+    }
+
+    RendererData renderer_data = m_renderer_system_data[id]; // NOTE(Vlad): We can sometime don't have any texture or animation, need to handle this too later
+    ImageType image_type = renderer_data.type;
+
+    Box box = m_boxes.Value(id);
+    Position position = m_positions.Value(id);
+    Program program = m_programs.Value(id);
+    Texture texture;
+
+    m_renderer_system->RenderBoxBegin(&position, m_camera_system, &program);
+
+    program.SetUniform1i("u_Texture", 0);
+
+    switch (image_type) {
+      case ImageType::ANIMATION: {
+        Animation animation = m_animations.Value(id);
+
+        int index = animation.GetIndex();
+        texture = m_textures[index];
+      }
+      break;
+      case ImageType::TEXTURE: {
+        texture = m_textures[id];   
+      }
+      break;
+    }
+
+    texture.Bind();
+
+    box.Bind();
+    box.Draw();
+    box.Unbind();
+
+    texture.Unbind();
+
+    m_renderer_system->RenderBoxEnd(&program);
+  }
+}
+
 void EntityManager::Render() {
   static double accumulator = 0.0;
   static int count = 0;
   StartCounter();
-  if (Global_GameState == GameState::RUN) { // TODO: Mb move render to user code, so the user can specify what he wants?
-    for (int i = 0; i < arrlen(m_renderer_system_data); ++i) {
-      RendererData renderer_data = m_renderer_system_data[i]; // NOTE(Vlad): We can sometime don't have any texture or animation, need to handle this too later
 
-      int id = renderer_data.id;
-      ImageType image_type = renderer_data.type;
-
-      Box box = m_boxes.Get(id);
-      Position position = m_positions.Get(id);
-      Program program = m_programs.Get(id);
-      Texture texture;
-
-      m_renderer_system->RenderBoxBegin(&position, m_camera_system, &program);
-
-      program.SetUniform1i("u_Texture", 0);
-
-      switch (image_type) {
-        case ImageType::ANIMATION: {
-          Animation animation = m_animations.Get(id);
-
-          int index = animation.GetIndex();
-          texture = m_textures[index];
-        }
-        break;
-        case ImageType::TEXTURE: {
-          texture = m_textures[id];   
-        }
-        break;
-      }
-
-      texture.Bind();
-
-      box.Bind();
-      box.Draw();
-      box.Unbind();
-
-      texture.Unbind();
-
-      m_renderer_system->RenderBoxEnd(&program);
-    }
+  if (Global_GameState == GameState::RUN) {
+    RenderGame();
   }
-  
 
   if (m_interface_system->m_render && m_interface_system_id != -1) {
-    m_interface_system->m_render(m_interface_system_id); // User code
+    m_interface_system->m_render(m_interface_system_id);
   }
 
   double time = GetCounter();

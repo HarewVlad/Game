@@ -23,46 +23,83 @@
 // };
 
 template <typename T>
-struct Component {
-  Component() {
-    m_array = NULL;
-    m_indexes = NULL;
-  }
-
-  inline void Add(int id, T value) {
-    if (arrlen(m_indexes) < id) {
-      arrsetlen(m_indexes, id); // TODO: Make more efficient with allocations
-    }
-
-    arrins(m_indexes, id, arrlen(m_array));
-    arrput(m_array, value);
-  }
-
-  inline void AddReference(int ida, int idb) { // NOTE(Vlad): ida want to stick to idb component
-    if (arrlen(m_indexes) < ida) {
-      arrsetlen(m_indexes, ida);
-    }
-
-    arrins(m_indexes, ida, idb);
-  }
-
-  inline void Remove(int id) {
-    int index = m_indexes[id];
-    arrdel(m_array, index);
-    arrdel(m_indexes, id);
-  }
-
-  inline T &Get(int id) {
-    int index = m_indexes[id];
-    int length = arrlen(m_indexes);
-    return m_array[index];
-  }
-
-  T *m_array;
-  int *m_indexes;
+struct Map {
+  int key;
+  T value;
 };
 
-// #define CREATE_COMPONENT(Type) Component<Type> ##Type##Components;
+template <typename T>
+struct Array {
+  // Array() {
+  //   m_array = NULL;
+  //   m_indexes = NULL;
+  //   m_ids = NULL;
+  // }
+
+  // void Add(int id, T value) {
+  //   if (arrlen(m_indexes) < id) {
+  //     arrsetlen(m_indexes, id); // TODO: Make more efficient with allocations
+  //   }
+
+  //   arrins(m_indexes, id, arrlen(m_array));
+  //   arrput(m_array, value);
+  // }
+
+  // void AddReference(int ida, int idb) { // NOTE(Vlad): ida want to stick to idb component
+  //   if (arrlen(m_indexes) < ida) {
+  //     arrsetlen(m_indexes, ida);
+  //   }
+
+  //   arrins(m_indexes, ida, idb);
+  // }
+
+  // void Remove(int id) {
+  //   int index = m_indexes[id];
+  //   arrdel(m_array, index);
+  //   arrdel(m_indexes, id);
+  // }
+
+  // int GetIndex(int id) {
+  //   return m_indexes[id];
+  // }
+
+  // T &Get(int id) {
+  //   int index = m_indexes[id];
+  //   return m_array[index];
+  // }
+
+  // int Size() {
+  //   return arrlen(m_indexes);
+  // }
+
+  // T *m_array;
+  // int *m_indexes;
+  // int *m_ids;
+
+  Array() {
+    m_map = NULL;
+  }
+
+  void Add(int id, T value) {
+    hmput(m_map, id, value);
+  }
+
+  T &Value(int id) {
+    return hmget(m_map, id);
+  }
+
+  Map<T> &GetPair(int index) {
+    return m_map[index];
+  }
+
+  int Size() {
+    return hmlen(m_map);
+  }
+
+  Map<T> *m_map;
+};
+
+// #define CREATE_COMPONENT(Type) Array<Type> ##Type##Components;
 // #define ADD_COMPONENT(Type, Id, Value) Type##Components.Add(Id, Value);
 // #define GET_COMPONENT(Type, Id) Type##Components.Get(Id);
 
@@ -72,6 +109,7 @@ struct EntityManager {
                   CollisionSystem *collision_system,
                   FollowSystem *follow_system, ControlSystem *control_system,
                   InterfaceSystem *interface_system);
+  void SetEntity(int id);
   void AddAnimation(int id, const Animation &animation); // TODO: Later replace with AnimationRange AddAnimation(...)
   void AddAnimation(const Animation &animation);
   void AddBox(int id, const Box &box); // NOTE(Vlad): But VertexArray is still need to be existent in "main". Later need to copy it in Box structure like we do there
@@ -87,8 +125,6 @@ struct EntityManager {
   void AddMovement(const Movement &movement);
   void AddBody(int id, const Body &body);
   void AddBody(const Body &body);
-  void AddState(int id, const State &state);
-  void AddState(const State &state);
 
   void AddToPhysics(int id);
   void AddToPhysics();
@@ -106,26 +142,26 @@ struct EntityManager {
   void AddToFollow(int a, int b); // NOTE(Vlad): A - Follower, B - The KING
 
   void Update(float dt);
+  void RenderGame();
   void Render();
 
   void Old(float dt);
 
+  // Components
+  Array<Animation> m_animations;
+  Array<Box> m_boxes;
+  Array<Program> m_programs;
+  Array<Position> m_positions;
+  Movement *m_movements;
+  Array<Body> m_bodies;
+  Texture *m_textures;
+
   // Test
-  void SetEntity(int id) {
-    m_id = id;
+  void AddBlink(int id, const EffectBlink &effect_blink) {
+    m_effect_blinks.Add(id, effect_blink);
   }
 
-  int m_id;
-
-  // Components
-  Component<Animation> m_animations;
-  Component<Box> m_boxes;
-  Component<Program> m_programs;
-  Component<Position> m_positions;
-  Movement *m_movements;
-  Component<Body> m_bodies;
-  Component<State> m_states;
-  Texture *m_textures;
+  Array<EffectBlink> m_effect_blinks;
 
   // Systems
   PhysicsSystem *m_physics_system;
@@ -133,6 +169,7 @@ struct EntityManager {
 
   RendererSystem *m_renderer_system;
   RendererData *m_renderer_system_data;
+  int *m_renderer_system_ids;
 
   CollisionSystem *m_collision_system;
   CollisionPair *m_collision_pairs;
@@ -149,5 +186,5 @@ struct EntityManager {
   InterfaceSystem *m_interface_system;
   int m_interface_system_id;
 
-  // TODO: Add ability to add custom systems
+  int m_id;
 };

@@ -1,5 +1,4 @@
-// TODO: Remove returns and place asserts
-bool Shader::Initialize(const char *code, unsigned int type) {
+void Shader::Initialize(const char *code, unsigned int type) {
   m_id = glCall(glCreateShader(type));
 
   glCall(glShaderSource(m_id, 1, &code, nullptr));
@@ -15,8 +14,6 @@ bool Shader::Initialize(const char *code, unsigned int type) {
     LOG(LOG_ERROR, "Shader", "%s", message);
     glCall(glDeleteShader(m_id));
     free(message);
-    return false;
+    assert(0);
   }
-
-  return true;
 }

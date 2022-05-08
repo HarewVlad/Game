@@ -9,6 +9,7 @@
 #include <iostream>
 #include <functional>
 #include <algorithm>
+#include <thread>
 ///
 
 // C
@@ -45,7 +46,7 @@ static const int MAX_FPS = 60;
 static const int MIN_ALLOCATION_SIZE = 100;
 static const int WIDTH = 2560;
 static const int HEIGHT = 1440;
-static const glm::vec2 GRAVITY = {0, -10.0f};
+static const glm::vec2 GRAVITY = {0, -50.0f};
 
 enum class GameState {
   MENU,
@@ -89,6 +90,7 @@ static GameState Global_GameState = GameState::MENU;
 #include "imgui_manager.h"
 #include "interface_system.h"
 #include "score.h"
+#include "effects/effect.h"
 #include "entity_manager.h"
 #ifdef __ANDROID__
   #include "imgui_manager_android.h"
