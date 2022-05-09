@@ -147,7 +147,7 @@ void EntityManager::SetToInterface() {
   SetToInterface(m_id);
 }
 
-void EntityManager::Old(float dt) {
+void EntityManager::Update(float dt) {
   if (Global_GameState != GameState::RUN) {
     return;
   }
@@ -211,22 +211,6 @@ void EntityManager::Old(float dt) {
   }
 }
 
-void EntityManager::Update(float dt) {
-  static double accumulator = 0.0;
-  static int count = 0;
-  StartCounter();
-  Old(dt);
-  double time = GetCounter();
-  accumulator += time;
-  count++;
-
-  if (count == 500) {
-    std::cout << "Update: " << accumulator / count << std::endl;
-    accumulator = 0;
-    count = 0;
-  }
-}
-
 void EntityManager::RenderGame() {
   for (int id = 0; id < arrlen(m_renderer_system_ids); ++id) {
     if (!m_renderer_system_ids[id]) {
@@ -272,23 +256,9 @@ void EntityManager::RenderGame() {
 }
 
 void EntityManager::Render() {
-  static double accumulator = 0.0;
-  static int count = 0;
-  StartCounter();
-
   if (Global_GameState == GameState::RUN) {
     RenderGame();
   }
 
   m_interface_system->Render(m_interface_system_id);
-
-  double time = GetCounter();
-  accumulator += time;
-  count++;
-
-  if (count == 500) {
-    std::cout << "Render: " << accumulator / count << std::endl;
-    accumulator = 0;
-    count = 0;
-  }
 }

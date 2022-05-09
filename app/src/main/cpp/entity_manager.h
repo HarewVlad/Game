@@ -145,8 +145,6 @@ struct EntityManager {
   void RenderGame();
   void Render();
 
-  void Old(float dt);
-
   // Components
   Array<Animation> m_animations;
   Array<Box> m_boxes;

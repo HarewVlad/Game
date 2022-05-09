@@ -47,7 +47,8 @@ void Win32Manager::Render() {
   glCall(glEnable(GL_BLEND));
   glCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-  glViewport(0, 0, m_glfw_manager->m_width, m_glfw_manager->m_height);
+  // TODO: Think again
+  glViewport(0, 0, m_glfw_manager->m_window_size->m_width, m_glfw_manager->m_window_size->m_height);
 
   m_entity_manager->Render();
 }

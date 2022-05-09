@@ -44,8 +44,8 @@
 static const glm::mat4 IDENTITY = glm::mat4(1.0f);
 static const int MAX_FPS = 60;
 static const int MIN_ALLOCATION_SIZE = 100;
-static const int WIDTH = 2560;
-static const int HEIGHT = 1440;
+static const int WIDTH = 1920;
+static const int HEIGHT = 1080;
 static const char *NAME = "Game";
 static const glm::vec2 GRAVITY = {0, -50.0f};
 
@@ -63,6 +63,7 @@ static GameState Global_GameState = GameState::MENU;
 #include "log.h"
 #include "utility.h"
 #include "time.h"
+#include "window_size.h"
 #ifdef __ANDROID__
   #include "egl_manager.h"
 #elif defined _WIN32

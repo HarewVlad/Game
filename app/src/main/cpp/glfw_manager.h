@@ -5,7 +5,7 @@ struct KeyState {
 
 struct GLFWManager {
   GLFWManager();
-  void Initialize(int width, int height, const char *title);
+  void Initialize(WindowSize *window_size, const char *title);
   void Shutdown();
   void FrameBufferSizeCallback(GLFWwindow *window, int width, int height);
   void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
@@ -17,7 +17,6 @@ struct GLFWManager {
 
   GLFWwindow *m_window;
   KeyState *m_key_state;
-  int m_width;
-  int m_height;
+  WindowSize *m_window_size;
   glm::mat4 m_projection;
 };

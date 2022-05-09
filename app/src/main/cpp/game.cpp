@@ -2,7 +2,8 @@ void Game::Initialize() {
   srand(timeGetTime());
 
   // Essentials
-  m_glfw_manager.Initialize(WIDTH, HEIGHT, NAME);
+  m_window_size.Initialize(WIDTH, HEIGHT);
+  m_glfw_manager.Initialize(&m_window_size, NAME);
   m_imgui_manager.Initialize(m_glfw_manager.m_window);
 
   // Systems
@@ -10,7 +11,7 @@ void Game::Initialize() {
   m_renderer_system.Initialize(&m_glfw_manager);
   m_physics_system.Initialize(GRAVITY);
   m_collision_system.Initialize();
-  m_follow_system.Initialize(&m_glfw_manager);
+  m_follow_system.Initialize(&m_window_size);
   m_interface_system.Initialize(&m_imgui_manager);
 
   // Entity manager
@@ -88,8 +89,8 @@ void Game::Start() {
   // Background
   Box background_box;
   VertexArray background_vertex_array;
-  float background_width = m_glfw_manager.m_width;
-  float background_height = m_glfw_manager.m_height;
+  float background_width = m_window_size.m_width;
+  float background_height = m_window_size.m_height;
   {
     VertexBuffer vertex_buffer;
     vertex_buffer.Initialize(background_width, background_height);
@@ -163,7 +164,7 @@ void Game::Start() {
   }
 
   Position player_position;
-  player_position.Initialize({m_glfw_manager.m_width * 0.5f, 80});
+  player_position.Initialize({m_window_size.m_width * 0.5f, 80});
 
   Movement player_movement;
   player_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
@@ -187,8 +188,8 @@ void Game::Start() {
   m_entity_manager.SetToInterface();
 
   // Arena size
-  int arena_width = m_glfw_manager.m_width;
-  int arena_height = m_glfw_manager.m_height * 1.5f;
+  int arena_width = m_window_size.m_width;
+  int arena_height = m_window_size.m_height * 1.5f;
 
   // Bear, Bandit, Golem
   auto GetEnemyPositionX = [](int width) {
@@ -280,7 +281,7 @@ void Game::Start() {
   player_constraint_position.Initialize({0, 0});
 
   Body player_constraint_body;
-  player_constraint_body.Initialize(BodyType::BOUNDING, {m_glfw_manager.m_width, m_glfw_manager.m_height});
+  player_constraint_body.Initialize(BodyType::BOUNDING, {m_window_size.m_width, m_window_size.m_height});
 
   m_entity_manager.AddPosition(2 + enemies_count * 2 + 1, player_constraint_position);
   m_entity_manager.AddBody(2 + enemies_count * 2 + 1, player_constraint_body);
@@ -328,7 +329,7 @@ void Game::Start() {
       position.m_xy.y = GetEnemyPositionY(arena_height);
     } else { // Player
       if (position.m_xy.x < 0) // NOTE(Vlad): If we collided on left side.
-        position.m_xy.x = m_glfw_manager.m_width * 0.95f;
+        position.m_xy.x = m_window_size.m_width * 0.95f;
       else
         position.m_xy.x = 0;
     }

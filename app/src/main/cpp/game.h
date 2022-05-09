@@ -3,6 +3,7 @@ struct Game {
   void Start();
 
   // Essentials
+  WindowSize m_window_size;
   GLFWManager m_glfw_manager;
   ImGuiManagerWin32 m_imgui_manager;
 

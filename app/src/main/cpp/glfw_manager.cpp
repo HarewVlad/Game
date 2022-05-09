@@ -13,8 +13,8 @@ void GLFWManager::FrameBufferSizeCallback(GLFWwindow *window, int width, int hei
       glm::ortho(0.0f, static_cast<float>(width), 0.0f,
                  static_cast<float>(height), -1000.0f, 1000.0f);
 
-  m_width = width;
-  m_height = height;
+  m_window_size->m_width = width;
+  m_window_size->m_height = height;
 }
 
 void KeyCallbackStatic(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -35,7 +35,7 @@ void GLFWManager::KeyCallback(GLFWwindow *window, int key, int scancode, int act
 }
 
 // TODO: Remove returns and place asserts
-void GLFWManager::Initialize(int width, int height, const char *title) {
+void GLFWManager::Initialize(WindowSize *window_size, const char *title) {
   if (!glfwInit()) {
     LOG(LOG_ERROR, "GLFWManager", "%s", "Unable to initialize GLFW");
     assert(0);
@@ -45,7 +45,7 @@ void GLFWManager::Initialize(int width, int height, const char *title) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  m_window = glfwCreateWindow(width, height, title, NULL, NULL);
+  m_window = glfwCreateWindow(window_size->m_width, window_size->m_height, title, NULL, NULL);
   if (!m_window) {
     glfwTerminate();
     LOG(LOG_ERROR, "GLFWManager", "%s", "Unable to create GLFWwindow");
@@ -63,11 +63,10 @@ void GLFWManager::Initialize(int width, int height, const char *title) {
     assert(0);
   }
 
-  m_width = width;
-  m_height = height;
+  m_window_size = window_size;
   m_projection =
-      glm::ortho(0.0f, static_cast<float>(width), 0.0f,
-                 static_cast<float>(height), -1000.0f, 1000.0f);
+      glm::ortho(0.0f, static_cast<float>(window_size->m_width), 0.0f,
+                 static_cast<float>(window_size->m_height), -1000.0f, 1000.0f);
   m_key_state = NULL;
 }
 

@@ -17,27 +17,27 @@ void EglManager::Shutdown(struct android_app *app) {
 }
 
 // TODO: Remove returns and place asserts
-bool EglManager::Initialize(struct android_app *app) {
+void EglManager::Initialize(struct android_app *app) {
   m_egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
   if (m_egl_display == EGL_NO_DISPLAY) {
       LOG(LOG_ERROR, "EglManager", "%s", "eglGetDisplay(EGL_DEFAULT_DISPLAY) returned EGL_NO_DISPLAY");
-      return false;
+      assert(0);
   }
 
   if (eglInitialize(m_egl_display, 0, 0) != EGL_TRUE) {
       LOG(LOG_ERROR, "EglManager", "%s", "eglInitialize() returned with an error");
-      return false;
+      assert(0);
   }
 
   const EGLint egl_attributes[] = { EGL_BLUE_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_RED_SIZE, 8, EGL_DEPTH_SIZE, 24, EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE };
   EGLint num_configs = 0;
   if (eglChooseConfig(m_egl_display, egl_attributes, nullptr, 0, &num_configs) != EGL_TRUE) {
       LOG(LOG_ERROR, "EglManager", "%s", "eglChooseConfig() returned with an error");
-      return false;
+      assert(0);
   }
   if (num_configs == 0) {
       LOG(LOG_ERROR, "EglManager", "%s", "eglChooseConfig() returned 0 matching config");
-      return false;
+      assert(0);
   }
 
   // Get the first matching config
@@ -52,11 +52,9 @@ bool EglManager::Initialize(struct android_app *app) {
 
   if (m_egl_context == EGL_NO_CONTEXT) {
       LOG(LOG_ERROR, "EglManager", "%s", "eglCreateContext() returned EGL_NO_CONTEXT");
-      return false;
+      assert(0);
   }
 
   m_egl_surface = eglCreateWindowSurface(m_egl_display, egl_config, app->window, NULL);
   eglMakeCurrent(m_egl_display, m_egl_surface, m_egl_surface, m_egl_context);
-
-  return true;
 }
