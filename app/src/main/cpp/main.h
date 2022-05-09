@@ -63,7 +63,7 @@ static GameState Global_GameState = GameState::MENU;
 #include "log.h"
 #include "utility.h"
 #include "time.h"
-#include "window_size.h"
+#include "size.h"
 #ifdef __ANDROID__
   #include "egl_manager.h"
 #elif defined _WIN32

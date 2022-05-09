@@ -15,7 +15,7 @@
 #include "log.cpp"
 #include "utility.cpp"
 #include "time.cpp"
-#include "window_size.cpp"
+#include "size.cpp"
 #include "vertex_buffer_layout.cpp"
 #include "vertex_buffer.cpp"
 #include "index_buffer.cpp"

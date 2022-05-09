@@ -4,11 +4,11 @@ enum class ImageType {
 };
 
 struct RendererSystem {
-  void Initialize(GLFWManager *glfw_manager);
-  void RenderBoxBegin(Position *position, CameraSystem *camera_system, Program *program);
+  void Initialize(glm::mat4 *projection);
+  void RenderBoxBegin(Program *program, const glm::mat4 &mv);
   void RenderBoxEnd(Program *program);
 
-  GLFWManager *m_glfw_manager;
+  glm::mat4 *m_projection;
 };
 
 struct RendererData {

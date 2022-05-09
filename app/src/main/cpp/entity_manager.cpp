@@ -225,7 +225,9 @@ void EntityManager::RenderGame() {
     Program program = m_programs.Value(id);
     Texture texture;
 
-    m_renderer_system->RenderBoxBegin(&position, m_camera_system, &program);
+    const glm::mat4 mv = m_camera_system->GetView() * position.GetModel();
+
+    m_renderer_system->RenderBoxBegin(&program, mv);
 
     program.SetUniform1i("u_Texture", 0);
 

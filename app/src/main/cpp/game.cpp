@@ -3,12 +3,15 @@ void Game::Initialize() {
 
   // Essentials
   m_window_size.Initialize(WIDTH, HEIGHT);
-  m_glfw_manager.Initialize(&m_window_size, NAME);
+  m_projection =
+      glm::ortho(0.0f, static_cast<float>(m_window_size.m_width), 0.0f,
+                 static_cast<float>(m_window_size.m_height), -1000.0f, 1000.0f);
+  m_glfw_manager.Initialize(&m_window_size, &m_projection, NAME);
   m_imgui_manager.Initialize(m_glfw_manager.m_window);
 
   // Systems
   m_camera_system.Initialize({0, 0});
-  m_renderer_system.Initialize(&m_glfw_manager);
+  m_renderer_system.Initialize(&m_projection);
   m_physics_system.Initialize(GRAVITY);
   m_collision_system.Initialize();
   m_follow_system.Initialize(&m_window_size);

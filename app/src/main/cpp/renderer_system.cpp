@@ -1,10 +1,10 @@
-void RendererSystem::Initialize(GLFWManager *glfw_manager) {
-  m_glfw_manager = glfw_manager;
+void RendererSystem::Initialize(glm::mat4 *projection) {
+  m_projection = projection;
 }
 
-void RendererSystem::RenderBoxBegin(Position *position, CameraSystem *camera_system, Program *program) {
+void RendererSystem::RenderBoxBegin(Program *program, const glm::mat4 &mv) {
   program->Bind();
-  program->SetUniformMat4("u_MVP", m_glfw_manager->m_projection * camera_system->GetView() * position->GetModel());
+  program->SetUniformMat4("u_MVP", (*m_projection) * mv);
 }
 
 void RendererSystem::RenderBoxEnd(Program *program) {

@@ -1,4 +1,4 @@
-void FollowSystem::Initialize(WindowSize *window_size) {
+void FollowSystem::Initialize(Size *window_size) {
   m_window_size = window_size;
 }
 
