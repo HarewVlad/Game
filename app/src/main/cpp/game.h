@@ -1,6 +1,6 @@
 struct Game {
   void Initialize();
-  void Main();
+  void Start();
 
   // Essentials
   GLFWManager m_glfw_manager;

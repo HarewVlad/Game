@@ -78,7 +78,7 @@ void android_main(struct android_app *app) {
 int main() {
   Game game;
   game.Initialize();
-  game.Main();
+  game.Start();
 
   ExitProcess(0); // TODO: Replace with android analouge?
 }

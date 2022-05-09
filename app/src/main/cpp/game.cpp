@@ -20,7 +20,7 @@ void Game::Initialize() {
   m_win32_manager.Initialize(&m_glfw_manager, &m_entity_manager);
 }
 
-void Game::Main() {
+void Game::Start() {
   IndexBuffer index_buffer;
   index_buffer.Initialize();
 
