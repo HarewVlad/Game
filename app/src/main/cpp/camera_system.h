@@ -1,7 +1,7 @@
 struct CameraSystem {
-  void Initialize(Position *position);
+  void Initialize(const glm::vec2 &xy);
   glm::mat4 GetView() const;
 
   glm::mat4 m_view;
-  Position *m_position;
+  glm::vec2 m_xy;
 };

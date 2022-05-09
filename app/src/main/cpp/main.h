@@ -46,6 +46,7 @@ static const int MAX_FPS = 60;
 static const int MIN_ALLOCATION_SIZE = 100;
 static const int WIDTH = 2560;
 static const int HEIGHT = 1440;
+static const char *NAME = "Game";
 static const glm::vec2 GRAVITY = {0, -50.0f};
 
 enum class GameState {
@@ -90,7 +91,7 @@ static GameState Global_GameState = GameState::MENU;
 #include "imgui_manager.h"
 #include "interface_system.h"
 #include "score.h"
-#include "effects/effect.h"
+#include "effects/effect_blink.h"
 #include "entity_manager.h"
 #ifdef __ANDROID__
   #include "imgui_manager_android.h"
@@ -99,6 +100,8 @@ static GameState Global_GameState = GameState::MENU;
   #include "imgui_manager_win32.h"
   #include "win32_manager.h"
 #endif
+
+#include "game.h"
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "User32.lib")

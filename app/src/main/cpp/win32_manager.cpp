@@ -1,16 +1,15 @@
-void Win32Manager::Initialize(GLFWManager *glfw_manager, Time *time,
+void Win32Manager::Initialize(GLFWManager *glfw_manager,
                               EntityManager *entity_manager) {
   m_glfw_manager = glfw_manager;
-  m_time = time;
   m_entity_manager = entity_manager;
 }
 
 void Win32Manager::Run() {
-  int old_time = m_time->GetMilliseconds();
+  int old_time = GetMilliseconds();
   int extra_time = 0;
   int frame_time = 1000 / MAX_FPS;
   while (!glfwWindowShouldClose(m_glfw_manager->m_window) && Global_GameState != GameState::EXIT) {
-    int new_time = m_time->GetMilliseconds();
+    int new_time = GetMilliseconds();
     int time = new_time - old_time;
 
     ////// FRAME ///////

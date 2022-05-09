@@ -205,10 +205,9 @@ void EntityManager::Old(float dt) {
   }
 
   if (m_camera_system_id != -1) {
-    Position *a = m_camera_system->m_position;
     Position &b = m_positions.Value(m_camera_system_id);
 
-    m_follow_system->Update(a, &b);
+    m_follow_system->Update(m_camera_system->m_xy, &b);
   }
 }
 
@@ -234,7 +233,7 @@ void EntityManager::RenderGame() {
       continue;
     }
 
-    RendererData renderer_data = m_renderer_system_data[id]; // NOTE(Vlad): We can sometime don't have any texture or animation, need to handle this too later
+    RendererData renderer_data = m_renderer_system_data[id];
     ImageType image_type = renderer_data.type;
 
     Box box = m_boxes.Value(id);
@@ -281,9 +280,7 @@ void EntityManager::Render() {
     RenderGame();
   }
 
-  if (m_interface_system->m_render && m_interface_system_id != -1) {
-    m_interface_system->m_render(m_interface_system_id);
-  }
+  m_interface_system->Render(m_interface_system_id);
 
   double time = GetCounter();
   accumulator += time;
