@@ -2,7 +2,7 @@
 
 struct AndroidManager {
   AndroidManager();
-  bool Initialize(struct android_app *app, Egl *egl, ImGuiManager *imgui_manager, Game *game);
+  bool Initialize(struct android_app *app, EglManager *egl_manager, ImGuiManager *imgui_manager);
   void OnInitialize(struct android_app *app);
   void OnShutdown(struct android_app *app);
   void Render(struct android_app *app);
@@ -14,5 +14,4 @@ struct AndroidManager {
   // Modules
   ImGuiManager *m_imgui_manager;
   EglManager *m_egl_manager;
-  Game *m_game;
 };

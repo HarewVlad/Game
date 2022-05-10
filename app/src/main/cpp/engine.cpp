@@ -1,4 +1,4 @@
-void Game::Initialize() {
+void Engine::Initialize() {
   srand(timeGetTime());
 
   // Essentials
@@ -19,12 +19,9 @@ void Game::Initialize() {
 
   // Entity manager
   m_entity_manager.Initialize(&m_camera_system, &m_renderer_system, &m_physics_system, &m_collision_system, &m_follow_system, &m_control_system, &m_interface_system);
-
-  // Game loop
-  m_win32_manager.Initialize(&m_glfw_manager, &m_entity_manager);
 }
 
-void Game::Start() {
+void Engine::Start() {
   IndexBuffer index_buffer;
   index_buffer.Initialize();
 
@@ -413,5 +410,59 @@ void Game::Start() {
     ImGui::End();
   });
 
-  m_win32_manager.Run();
+  // NOTE(Vlad): Call it here, because have some issues with storage of some structs, need to think about it later
+  Loop();
+}
+
+void Engine::Loop() {
+  int old_time = GetMilliseconds();
+  int extra_time = 0;
+  int frame_time = 1000 / MAX_FPS;
+  while (!glfwWindowShouldClose(m_glfw_manager.m_window) && Global_GameState != GameState::EXIT) {
+    int new_time = GetMilliseconds();
+    int time = new_time - old_time;
+
+    ////// FRAME ///////
+
+    if (m_glfw_manager.IsWindowFocused()) {
+      extra_time += time;
+
+      while (extra_time >= frame_time) {
+        glfwPollEvents();
+
+        Update(frame_time / 1000.0f);
+
+        extra_time -= frame_time;
+      }
+      
+      Render();
+    } else {
+      Sleep(5);
+
+      glfwPollEvents();
+    }
+
+    glfwSwapBuffers(m_glfw_manager.m_window);
+
+    /////// END FRAME ///////
+
+    old_time = new_time;
+  }
+}
+
+void Engine::Render() {
+  glCall(glClearColor(0.0, 0.0, 0.0, 1.0f));
+  glCall(glClear(GL_COLOR_BUFFER_BIT));
+
+  glCall(glEnable(GL_BLEND));
+  glCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+  // TODO: Think again
+  glViewport(0, 0, m_window_size.m_width, m_window_size.m_height);
+
+  m_entity_manager.Render();
+}
+
+void Engine::Update(float dt) {
+  m_entity_manager.Update(dt);
 }

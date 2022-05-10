@@ -1,6 +1,9 @@
-struct Game {
+struct Engine {
   void Initialize();
   void Start();
+  void Loop();
+  void Render();
+  void Update(float dt);
 
   // Essentials
   Size m_window_size;
@@ -19,7 +22,4 @@ struct Game {
 
   // Entity manager
   EntityManager m_entity_manager;
-
-  // Game loop
-  Win32Manager m_win32_manager;
 };

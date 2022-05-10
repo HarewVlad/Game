@@ -99,10 +99,9 @@ static GameState Global_GameState = GameState::MENU;
   #include "android_manager.h"
 #elif defined _WIN32
   #include "imgui_manager_win32.h"
-  #include "win32_manager.h"
 #endif
 
-#include "game.h"
+#include "engine.h"
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "User32.lib")

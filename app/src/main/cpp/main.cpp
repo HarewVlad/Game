@@ -21,12 +21,10 @@
 #include "index_buffer.cpp"
 #include "vertex_array.cpp"
 #include "box.cpp"
-
 #ifdef __ANDROID__
   #include "android_manager.cpp"
   #include "egl_manager.cpp"
 #elif defined _WIN32
-  #include "win32_manager.cpp"
   #include "glfw_manager.cpp"
 #endif
 
@@ -56,7 +54,7 @@
   #include "imgui_manager_win32.cpp"
 #endif
 
-#include "game.cpp"
+#include "engine.cpp"
 
 void Initialize() {
   srand(timeGetTime());
@@ -77,9 +75,9 @@ void Initialize() {
 void android_main(struct android_app *app) {
 #elif defined _WIN32
 int main() {
-  Game game;
-  game.Initialize();
-  game.Start();
+  Engine engine;
+  engine.Initialize();
+  engine.Start();
 
   ExitProcess(0); // TODO: Replace with android analouge?
 }
