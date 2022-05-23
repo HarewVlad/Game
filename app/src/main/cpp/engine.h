@@ -1,15 +1,15 @@
 struct Engine {
-  void Initialize();
+  void Initialize(WindowManager *window_manager, ImGuiManager *imgui_manager, PathManager *path_manager, InputManager *input_manager);
   void Start();
   void Loop();
   void Render();
   void Update(float dt);
 
   // Essentials
-  Size m_window_size;
-  glm::mat4 m_projection;
-  GLFWManager m_glfw_manager;
-  ImGuiManagerWin32 m_imgui_manager;
+  InputManager *m_input_manager;
+  WindowManager *m_window_manager;
+  ImGuiManager *m_imgui_manager;
+  PathManager *m_path_manager;
 
   // Systems
   CameraSystem m_camera_system;

@@ -1,13 +1,17 @@
-void FollowSystem::Initialize(Size *window_size) {
-  m_window_size = window_size;
+void FollowSystem::Initialize(WindowManager *window_manager) {
+  m_window_manager = window_manager;
 }
 
 void FollowSystem::Update(Position *a, Position *b) {
-  a->m_xy.x = b->m_xy.x - m_window_size->m_width * 0.5f;
-  a->m_xy.y = b->m_xy.y - m_window_size->m_height * 0.5f;
+  const glm::vec2 window_size = m_window_manager->m_size;
+
+  a->m_xy.x = b->m_xy.x - window_size.x * 0.5f;
+  a->m_xy.y = b->m_xy.y - window_size.y * 0.5f;
 }
 
 void FollowSystem::Update(glm::vec2 &a, Position *b) {
-  a.x = b->m_xy.x - m_window_size->m_width * 0.5f;
-  a.y = b->m_xy.y - m_window_size->m_height * 0.5f;
+  const glm::vec2 window_size = m_window_manager->m_size;
+
+  a.x = b->m_xy.x - window_size.x * 0.5f;
+  a.y = b->m_xy.y - window_size.y * 0.5f;
 }

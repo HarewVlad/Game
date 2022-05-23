@@ -1,7 +1,12 @@
 static void LOG(LogPriority log_priority, const char *tag, const char *fmt,
                 ...) {
 #ifdef __ANDROID__
-  __android_log_print(log_priority, tag, fmt, ...);
+  va_list args;
+  va_start(args, fmt);
+
+  __android_log_vprint(log_priority, tag, fmt, args);
+
+  va_end(args);
 #elif defined _WIN32
   va_list args;
   va_start(args, fmt);

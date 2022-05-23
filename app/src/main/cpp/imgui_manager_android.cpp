@@ -1,4 +1,4 @@
-void ImGuiManagerAndroid::Initialize(struct android_app *app) {
+void ImGuiManagerAndroid::Initialize(ANativeWindow *window) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
@@ -12,7 +12,7 @@ void ImGuiManagerAndroid::Initialize(struct android_app *app) {
   //ImGui::StyleColorsClassic();
 
   // Setup Platform/Renderer backends
-  ImGui_ImplAndroid_Init(app->window);
+  ImGui_ImplAndroid_Init(window);
   ImGui_ImplOpenGL3_Init("#version 300 es");
 
   // Load Fonts
@@ -59,16 +59,16 @@ void ImGuiManagerAndroid::Shutdown() {
   ImGui::DestroyContext();
 }
 
-void ImGuiManagerAndroid::RenderBegin(struct android_app *app) {
+void ImGuiManagerAndroid::RenderBegin() {
   // Poll Unicode characters via JNI
   // FIXME: do not call this every frame because of JNI overhead
   // PollUnicodeChars();
 
   // Open on-screen (soft) input if requested by Dear ImGui
-  static bool WantTextInputLast = false;
-  if (io.WantTextInput && !WantTextInputLast)
-      Utility::ShowSoftKeyboardInput(app);
-  WantTextInputLast = io.WantTextInput;
+  // static bool WantTextInputLast = false;
+  // if (io.WantTextInput && !WantTextInputLast)
+  //     Utility::ShowSoftKeyboardInput(app);
+  // WantTextInputLast = io.WantTextInput;
 
   // Start the Dear ImGui frame
   ImGui_ImplOpenGL3_NewFrame();

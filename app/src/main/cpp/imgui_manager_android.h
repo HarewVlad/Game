@@ -1,5 +1,5 @@
 struct ImGuiManagerAndroid : public ImGuiManager {
-  void Initialize(struct android_app *app);
+  void Initialize(ANativeWindow *window);
   void Shutdown();
-  void RenderBegin(struct android_app *app);
+  void RenderBegin() override; // NOTE(Vlad): Potentially slow function call due to virtual
 };

@@ -1,17 +1,18 @@
 // NOTE(Vlad): "On" prefix because it is event =)
 
-struct AndroidManager {
-  AndroidManager();
-  bool Initialize(struct android_app *app, EglManager *egl_manager, ImGuiManager *imgui_manager);
-  void OnInitialize(struct android_app *app);
-  void OnShutdown(struct android_app *app);
-  void Render(struct android_app *app);
-  void Run(struct android_app *app);
-  void OnAppCmd(struct android_app *app, int32_t app_cmd);
+struct WindowManagerAndroid : public WindowManager {
+  void Initialize(struct android_app *app, EglManager *egl_manager);
+  void OnInitialize();
+  void OnShutdown();
 
-  static AndroidManager *m_android_manager;
+  static void OnAppCmd(struct android_app *app, int32_t app_cmd);
+  static int32_t OnInputEvent(struct android_app *app, AInputEvent *input_event);
 
-  // Modules
-  ImGuiManager *m_imgui_manager;
+  bool WindowShouldClose() override;
+  bool IsWindowFocused() override;
+  void SwapBuffers() override;
+  void PollEvents() override;
+
   EglManager *m_egl_manager;
+  android_app *m_app;
 };

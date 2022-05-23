@@ -1,6 +1,8 @@
 // TODO: Remove OpenGL from Utility
 // TOOD: Make like OpenGL, Android, Utility
 namespace Utility {
+  void Wait(int milliseconds);
+
 namespace OpenGL {
 // #define ASSERT(x) if (!(x)) __debugbreak();
 
@@ -13,7 +15,6 @@ static unsigned int GetTypeSize(unsigned int type);
 }
 
 #ifdef __ANDROID__
-  static int GetAssetData(AAssetManager *asset_manager, const char* filename, void** data);
   static int ShowSoftKeyboardInput(struct android_app *app);
 #endif
 } // namespace Utility

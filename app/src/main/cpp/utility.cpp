@@ -1,4 +1,12 @@
 namespace Utility {
+  void Wait(int milliseconds) {
+    #ifdef __ANDROID__
+      usleep(milliseconds * 1000); // NOTE(Vlad): usleep is in microseconds
+    #elif defined _WIN32
+      Sleep(milliseconds);
+    #endif
+  }
+
 // Unfortunately, there is no way to show the on-screen input from native code.
 // Therefore, we call ShowSoftKeyboardInput() of the main activity implemented
 // in MainActivity.kt via JNI.
@@ -33,22 +41,6 @@ static int ShowSoftKeyboardInput(struct android_app *app) {
   return 0;
 }
 
-// Helper to retrieve data placed into the assets directory (android/app/src/main/assets)
-static int GetAssetData(AAssetManager *asset_manager, const char* filename, void** data)
-{
-   int num_bytes = 0;
-   AAsset* asset_descriptor =
-   AAssetManager_open(asset_manager, filename,
-   AASSET_MODE_BUFFER); if (asset_descriptor)
-   {
-       num_bytes = AAsset_getLength(asset_descriptor);
-       *data = IM_ALLOC(num_bytes);
-       int64_t num_bytes_read = AAsset_read(asset_descriptor, *data,
-       num_bytes); AAsset_close(asset_descriptor); IM_ASSERT(num_bytes_read
-       == num_bytes);
-   }
-   return num_bytes;
-}
 #endif
 
 namespace OpenGL {

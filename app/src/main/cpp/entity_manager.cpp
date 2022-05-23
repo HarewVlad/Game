@@ -112,16 +112,11 @@ void EntityManager::AddToCollision(int a, int b) {
 
 void EntityManager::AddToFollow(int a, int b) { hmput(m_follow_map, a, b); }
 
-Range EntityManager::AddTextures(const char *fmt, int size) {
-  Range result = {arrlen(m_textures), arrlen(m_textures) + size};
+Range EntityManager::AddTextures(Texture *textures, int size) {
+  Range result = {(int)arrlen(m_textures), (int)(arrlen(m_textures) + size)};
 
-  char buffer[256];
   for (int i = 0; i < size; ++i) {
-    (void)snprintf(buffer, 256, fmt, i);
-
-    Texture texture;
-    texture.Initialize(buffer);
-    AddTexture(texture);
+    AddTexture(textures[i]);
   }
 
   return result;
@@ -217,12 +212,12 @@ void EntityManager::RenderGame() {
       continue;
     }
 
-    RendererData renderer_data = m_renderer_system_data[id];
+    const RendererData renderer_data = m_renderer_system_data[id];
     ImageType image_type = renderer_data.type;
 
-    Box box = m_boxes.Value(id);
-    Position position = m_positions.Value(id);
-    Program program = m_programs.Value(id);
+    Box &box = m_boxes.Value(id);
+    const Position &position = m_positions.Value(id);
+    Program &program = m_programs.Value(id);
     Texture texture;
 
     const glm::mat4 mv = m_camera_system->GetView() * position.GetModel();

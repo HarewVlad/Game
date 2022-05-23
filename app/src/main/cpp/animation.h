@@ -1,10 +1,4 @@
-// TODO: Make it AnimationSystem and take just sprites and ids
-
-struct Range {
-  int m_start;
-  int m_end;
-};
-
+// TODO: Make it AnimationSystem
 struct AnimationMap {
   int key;
   Range value;
@@ -17,7 +11,7 @@ struct Animation {
   void SetAnimation(int id);
   int GetIndex();
 
-  AnimationMap *m_animation_map;
+  AnimationMap *m_animation_map; // TODO: Replace with array?
 
   int m_id;
   int m_index;

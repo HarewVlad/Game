@@ -1,8 +1,8 @@
 struct EglManager {
-  void Initialize(struct android_app *app);
-  void Shutdown(struct android_app *app);
+  void Initialize(ANativeWindow *window);
+  void Shutdown();
 
-  EGLDisplay m_egl_display;
-  EGLSurface m_egl_surface;
-  EGLContext m_egl_context;
+  EGLDisplay m_display;
+  EGLSurface m_surface;
+  EGLContext m_context;
 };

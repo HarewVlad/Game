@@ -99,6 +99,9 @@ struct Array {
   Map<T> *m_map;
 };
 
+// TODO: System<Follow> ...
+//       System<Physics> ...
+
 // #define CREATE_COMPONENT(Type) Array<Type> ##Type##Components;
 // #define ADD_COMPONENT(Type, Id, Value) Type##Components.Add(Id, Value);
 // #define GET_COMPONENT(Type, Id) Type##Components.Get(Id);
@@ -117,7 +120,7 @@ struct EntityManager {
   void AddProgram(int id, const Program &program);
   void AddProgram(const Program &program);
   void AddTexture(const Texture &texture);
-  Range AddTextures(const char *fmt, int size);
+  Range AddTextures(Texture *textures, int size);
   void AddPosition(int id, const Position &position);
   void AddPosition(const Position &position);
   void AddPositionReference(int ida, int idb);

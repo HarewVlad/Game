@@ -1,21 +1,19 @@
-void Engine::Initialize() {
-  srand(timeGetTime());
+// TODO: Make it easier to create animations lol
 
-  // Essentials
-  m_window_size.Initialize(WIDTH, HEIGHT);
-  m_projection =
-      glm::ortho(0.0f, static_cast<float>(m_window_size.m_width), 0.0f,
-                 static_cast<float>(m_window_size.m_height), -1000.0f, 1000.0f);
-  m_glfw_manager.Initialize(&m_window_size, &m_projection, NAME);
-  m_imgui_manager.Initialize(m_glfw_manager.m_window);
+void Engine::Initialize(WindowManager *window_manager, ImGuiManager *imgui_manager, PathManager *path_manager, InputManager *input_manager) {
+  m_window_manager = window_manager;
+  m_input_manager = input_manager;
+  m_imgui_manager = imgui_manager;
+  m_path_manager = path_manager;
 
   // Systems
+  // TODO: Think about systems and how can we add custom systems (Steel code from Unity DOTS i guess=))
   m_camera_system.Initialize({0, 0});
-  m_renderer_system.Initialize(&m_projection);
+  m_renderer_system.Initialize(window_manager);
   m_physics_system.Initialize(GRAVITY);
   m_collision_system.Initialize();
-  m_follow_system.Initialize(&m_window_size);
-  m_interface_system.Initialize(&m_imgui_manager);
+  m_follow_system.Initialize(window_manager);
+  m_interface_system.Initialize(imgui_manager);
 
   // Entity manager
   m_entity_manager.Initialize(&m_camera_system, &m_renderer_system, &m_physics_system, &m_collision_system, &m_follow_system, &m_control_system, &m_interface_system);
@@ -29,24 +27,40 @@ void Engine::Start() {
   vertex_buffer_layout.Initialize();
 
   // Background
-  Texture texture;
-  texture.Initialize("..\\assets\\background.png");
-  m_entity_manager.AddTexture(texture);
+  Texture background_texture;
+  m_path_manager->GetTexture(&background_texture, "background.png");
+  m_entity_manager.AddTexture(background_texture);
 
-  // Animations
-  Range player_idle_range = m_entity_manager.AddTextures("..\\assets\\player\\idle\\%d.png", 4);
-  Range player_run_range = m_entity_manager.AddTextures("..\\assets\\player\\run\\%d.png", 8);
+  // Player
+  Texture player_idle_textures[4];
+  Texture player_run_textures[8];
+  m_path_manager->GetTextures(player_idle_textures, 4, "player/idle/%d.png");
+  m_path_manager->GetTextures(player_run_textures, 8, "player/run/%d.png");
+
+  // Enemy
+  Texture enemy_bear_textures[4];
+  Texture enemy_bandit_textures[4];
+  Texture enemy_golem_textures[6];
+  Texture enemy_ent_textures[4];
+  m_path_manager->GetTextures(enemy_bear_textures, 4, "bear/%d.png");
+  m_path_manager->GetTextures(enemy_bandit_textures, 4, "bandit/%d.png");
+  m_path_manager->GetTextures(enemy_golem_textures, 6, "golem/%d.png");
+  m_path_manager->GetTextures(enemy_ent_textures, 4, "ent/%d.png");
+
+  // Get animation ranges
+  Range player_idle_range = m_entity_manager.AddTextures(player_idle_textures, 4);
+  Range player_run_range = m_entity_manager.AddTextures(player_run_textures, 8);
 
   Range enemy_animation_ranges[4];
-  enemy_animation_ranges[0] = m_entity_manager.AddTextures("..\\assets\\bear\\%d.png", 4);
-  enemy_animation_ranges[1] = m_entity_manager.AddTextures("..\\assets\\bandit\\%d.png", 4);
-  enemy_animation_ranges[2] = m_entity_manager.AddTextures("..\\assets\\golem\\%d.png", 6);
-  enemy_animation_ranges[3] = m_entity_manager.AddTextures("..\\assets\\ent\\%d.png", 4);
+  enemy_animation_ranges[0] = m_entity_manager.AddTextures(enemy_bear_textures, 4);
+  enemy_animation_ranges[1] = m_entity_manager.AddTextures(enemy_bandit_textures, 4);
+  enemy_animation_ranges[2] = m_entity_manager.AddTextures(enemy_golem_textures, 6);
+  enemy_animation_ranges[3] = m_entity_manager.AddTextures(enemy_ent_textures, 4);
 
   // Shaders
   Shader vertex_shader;
   {
-    const char *vertex_shader_code = R"(#version 330 core
+    const char *vertex_shader_code = R"(#version 300 es
                                      layout(location = 0) in vec4 position;
                                      layout(location = 1) in vec2 uv;
 
@@ -63,7 +77,7 @@ void Engine::Start() {
 
   Shader fragment_shader;
   {
-    const char *fragment_shader_code = R"(#version 330 core
+    const char *fragment_shader_code = R"(#version 300 es
         precision mediump float;
         layout(location = 0) out vec4 color;
 
@@ -89,11 +103,11 @@ void Engine::Start() {
   // Background
   Box background_box;
   VertexArray background_vertex_array;
-  float background_width = m_window_size.m_width;
-  float background_height = m_window_size.m_height;
+  float background_width = m_window_manager->m_size.x;
+  float background_height = m_window_manager->m_size.y;
   {
     VertexBuffer vertex_buffer;
-    vertex_buffer.Initialize(background_width, background_height);
+    vertex_buffer.Initialize(background_width, background_height); // TODO: Why not just pass glm::vec2?
 
     // Vertex buffer layout
     vertex_buffer_layout.Push(GL_FLOAT, 2);
@@ -164,7 +178,7 @@ void Engine::Start() {
   }
 
   Position player_position;
-  player_position.Initialize({m_window_size.m_width * 0.5f, 80});
+  player_position.Initialize({m_window_manager->m_size.x * 0.5f, 80});
 
   Movement player_movement;
   player_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
@@ -188,8 +202,8 @@ void Engine::Start() {
   m_entity_manager.SetToInterface();
 
   // Arena size
-  int arena_width = m_window_size.m_width;
-  int arena_height = m_window_size.m_height * 1.5f;
+  int arena_width = m_window_manager->m_size.x;
+  int arena_height = m_window_manager->m_size.y * 1.5f;
 
   // Bear, Bandit, Golem
   auto GetEnemyPositionX = [](int width) {
@@ -204,7 +218,7 @@ void Engine::Start() {
   const int enemy_types = 4;
 
   Animation enemy_animations[enemies_count];
-  for (int i = 0; i < _countof(enemy_animations); ++i) {
+  for (int i = 0; i < sizeof(enemy_animations) / sizeof(Animation); ++i) {
     enemy_animations[i].Initialize();
     enemy_animations[i].Add(0, enemy_animation_ranges[i % enemy_types]);
   }
@@ -281,7 +295,7 @@ void Engine::Start() {
   player_constraint_position.Initialize({0, 0});
 
   Body player_constraint_body;
-  player_constraint_body.Initialize(BodyType::BOUNDING, {m_window_size.m_width, m_window_size.m_height});
+  player_constraint_body.Initialize(BodyType::BOUNDING, {m_window_manager->m_size.x, m_window_manager->m_size.y});
 
   m_entity_manager.AddPosition(2 + enemies_count * 2 + 1, player_constraint_position);
   m_entity_manager.AddBody(2 + enemies_count * 2 + 1, player_constraint_body);
@@ -329,39 +343,39 @@ void Engine::Start() {
       position.m_xy.y = GetEnemyPositionY(arena_height);
     } else { // Player
       if (position.m_xy.x < 0) // NOTE(Vlad): If we collided on left side.
-        position.m_xy.x = m_window_size.m_width * 0.95f;
+        position.m_xy.x = m_window_manager->m_size.x * 0.95f;
       else
         position.m_xy.x = 0;
     }
   });
 
-  m_control_system.SetOnInputPlayer([&](int id, float dt) {
-    Movement &movement = m_entity_manager.m_movements[id];
-    Animation &animation = m_entity_manager.m_animations.Value(id);
+// m_control_system.SetOnInputPlayer([&](int id, float dt) {
+//   Movement &movement = m_entity_manager.m_movements[id];
+//   Animation &animation = m_entity_manager.m_animations.Value(id);
+//
+//   if (m_input_manager->IsKeyPressed(GLFW_KEY_A)) { // TODO: Replace with InputManager later for Android and other
+//     movement.m_velocity.x -= 200.0f;
+//     player_state.m_value = (int)PlayerState::RUN;
+//     animation.SetAnimation((int)PlayerState::RUN);
+//     player_vertex_buffer.BindData(&player_vertices_flipped, sizeof(player_vertices_flipped));
+//   } else if (m_input_manager->IsKeyPressed(GLFW_KEY_D)) {
+//     movement.m_velocity.x += 200.0f;
+//     player_state.m_value = (int)PlayerState::RUN;
+//     animation.SetAnimation((int)PlayerState::RUN);
+//     player_vertex_buffer.BindData(&player_vertices, sizeof(player_vertices));
+//   } else {
+//     player_state.m_value = (int)PlayerState::IDLE;
+//     animation.SetAnimation((int)PlayerState::IDLE);
+//   }
+// });
 
-    if (m_glfw_manager.IsKeyPressed(GLFW_KEY_A)) { // TODO: Replace with InputManager later for Android and other
-      movement.m_velocity.x -= 200.0f;
-      player_state.m_value = (int)PlayerState::RUN;
-      animation.SetAnimation((int)PlayerState::RUN);
-      player_vertex_buffer.BindData(&player_vertices_flipped, sizeof(player_vertices_flipped));
-    } else if (m_glfw_manager.IsKeyPressed(GLFW_KEY_D)) {
-      movement.m_velocity.x += 200.0f;
-      player_state.m_value = (int)PlayerState::RUN;
-      animation.SetAnimation((int)PlayerState::RUN);
-      player_vertex_buffer.BindData(&player_vertices, sizeof(player_vertices));
-    } else {
-      player_state.m_value = (int)PlayerState::IDLE;
-      animation.SetAnimation((int)PlayerState::IDLE);
-    }
-  });
+// m_control_system.SetOnInputGlobal([&](float dt) {
+//   if (m_input_manager->IsKeyPressed(GLFW_KEY_ESCAPE)) {
+//     Global_GameState = GameState::MENU;
+//   }
+// });
 
-  m_control_system.SetOnInputGlobal([&](float dt) {
-    if (m_glfw_manager.IsKeyPressed(GLFW_KEY_ESCAPE)) {
-      Global_GameState = GameState::MENU;
-    }
-  });
-
-  m_interface_system.SetRender([&](int id) {
+  m_interface_system.SetRender([&](int id) { // TODO: Make ISystem derived, so user can specify system and bind it to EntityManager?
     ImGuiIO &io = ImGui::GetIO();
 
     ImGui::SetNextWindowPos(ImVec2(0, 0), 0, ImVec2(0, 0));
@@ -410,6 +424,9 @@ void Engine::Start() {
     ImGui::End();
   });
 
+  // Set initial state
+  Global_GameState = GameState::MENU;
+
   // NOTE(Vlad): Call it here, because have some issues with storage of some structs, need to think about it later
   Loop();
 }
@@ -418,17 +435,17 @@ void Engine::Loop() {
   int old_time = GetMilliseconds();
   int extra_time = 0;
   int frame_time = 1000 / MAX_FPS;
-  while (!glfwWindowShouldClose(m_glfw_manager.m_window) && Global_GameState != GameState::EXIT) {
+  while (!m_window_manager->WindowShouldClose() && Global_GameState != GameState::EXIT) {
     int new_time = GetMilliseconds();
     int time = new_time - old_time;
 
     ////// FRAME ///////
 
-    if (m_glfw_manager.IsWindowFocused()) {
+    if (m_window_manager->IsWindowFocused()) {
       extra_time += time;
 
       while (extra_time >= frame_time) {
-        glfwPollEvents();
+        m_window_manager->PollEvents();
 
         Update(frame_time / 1000.0f);
 
@@ -437,12 +454,12 @@ void Engine::Loop() {
       
       Render();
     } else {
-      Sleep(5);
+      Utility::Wait(5);
 
-      glfwPollEvents();
+      m_window_manager->PollEvents();
     }
 
-    glfwSwapBuffers(m_glfw_manager.m_window);
+    m_window_manager->SwapBuffers();
 
     /////// END FRAME ///////
 
@@ -457,8 +474,8 @@ void Engine::Render() {
   glCall(glEnable(GL_BLEND));
   glCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-  // TODO: Think again
-  glViewport(0, 0, m_window_size.m_width, m_window_size.m_height);
+  // TODO: Do i need that?
+  glViewport(0, 0, m_window_manager->m_size.x, m_window_manager->m_size.y);
 
   m_entity_manager.Render();
 }
