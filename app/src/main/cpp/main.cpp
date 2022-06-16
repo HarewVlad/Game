@@ -64,18 +64,12 @@
 
 // #include "test.cpp"
 
-// TODO: Rework code, make initialization the same for two platforms (WORKING)
 // TODO: Link Program and VertexBufferLayout together i guess?
-// TODO: Instead of return codes, just make and assertion and terminate the programm if error is hard
 // TODO: Texture batching, instance drawing
 // TODO: Generate background via shaders?
-// TODO: Copy IndexBuffer and VertexArray to Box?
-// TODO: To minimize performance overhead, bind callbacks to entity ids?
-// TODO: Add ability to add custom systems
 // TODO: Make position centered, based of size of an object? (Helps with radius issue)
 // TODO: Add multithreading
 // TODO: AOS to SOA?
-// TODO: Pass only projection matrix to renderer system instead of whole window manager structure
 
 void Check() {
   // Tests::Test();

@@ -8,7 +8,9 @@ void MovementSystem::Update(EntityManager *entity_manager, float dt) {
     position->m_xy += movement->m_velocity * dt;
 
     const glm::vec2 acceleration = movement->m_acceleration + movement->m_force * movement->m_imass;
+
     movement->m_velocity += acceleration * dt;
     movement->m_velocity *= powf(movement->m_damping, dt);
+    movement->m_force = {};
   }
 }

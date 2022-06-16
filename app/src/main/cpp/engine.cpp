@@ -113,13 +113,15 @@ void Engine::Script() {
   player_position.Initialize({m_platform_manager->m_size.x * 0.5f, 80});
 
   Movement player_movement;
-  player_movement.Initialize({10, 0}, {10, 0}, 1, 0);
+  player_movement.Initialize({10, 0}, {10, 0}, 1, 0.005);
 
   Body player_body {BodyType_Box, player_size};
 
   Health player_health {3};
 
   Score player_score;
+
+  Stamina player_stamina {1.0f};
 
   Effect player_effect;
   player_effect.Initialize(1, 12.0f);
@@ -139,6 +141,7 @@ void Engine::Script() {
   m_entity_manager.AddComponent<Score>(entity, player_score);
   m_entity_manager.AddComponent<RenderInfo>(entity, player_render_info);
   m_entity_manager.AddComponent<Effect>(entity, player_effect);
+  m_entity_manager.AddComponent<Stamina>(entity, player_stamina);
   
   control_system->AddEntity(entity);
   animation_system->AddEntity(entity);

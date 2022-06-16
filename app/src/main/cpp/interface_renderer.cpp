@@ -32,7 +32,8 @@ void InterfaceRenderer::Render(EntityManager *entity_manager) {
       }
       ImGui::SetCursorPosX(io.DisplaySize.x / 2.0f - button_size.x * 0.5f);
       if (ImGui::Button("Reset", button_size)) {
-        // GameReset();
+        Global_GameState = GameState_Run;
+        Global_GameState |= GameState_Reset;
       }
 
       ImGui::SetCursorPosX(io.DisplaySize.x / 2.0f - button_size.x * 0.5f);
@@ -44,9 +45,13 @@ void InterfaceRenderer::Render(EntityManager *entity_manager) {
     } else if (Global_GameState & GameState_Run) {
       Health *health = entity_manager->GetComponent<Health>(entity);
       Score *score = entity_manager->GetComponent<Score>(entity);
+      Stamina *stamina = entity_manager->GetComponent<Stamina>(entity);
 
       ImGui::Text("Health: %d", health->m_value);
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate); 
+      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+      ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0, 1.0f, 0, 1));
+      ImGui::ProgressBar(stamina->m_value, ImVec2(100.0f, 0.0f));
+      ImGui::PopStyleColor();
       ImGui::SetCursorPosX(io.DisplaySize.x / 2);
       ImGui::Text("Score: %d", score->m_value);
     }

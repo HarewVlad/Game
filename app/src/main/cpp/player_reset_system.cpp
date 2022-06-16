@@ -10,9 +10,11 @@ void PlayerResetSystem::Update(EntityManager *entity_manager, float dt) {
 
     Health *health = entity_manager->GetComponent<Health>(entity);
     Score *score = entity_manager->GetComponent<Score>(entity);
+    Stamina *stamina = entity_manager->GetComponent<Stamina>(entity);
 
     health->m_value = 3;
     score->m_value = 0;
+    stamina->m_value = 1.0f;
   }
   
   Global_GameState ^= GameState_PlayerReset;

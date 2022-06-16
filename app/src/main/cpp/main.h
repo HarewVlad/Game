@@ -5,8 +5,6 @@
   #define IMGUI_IMPL_OPENGL_LOADER_GLEW
 #endif
 
-// TODO: Rethink place to zero-initialize members of structs
-
 // C++
 #include <iostream>
 #include <functional>
@@ -91,6 +89,7 @@ static int Global_GameState = GameState_None;
 #include "box.h"
 #include "shader.h"
 #include "program.h"
+#include "stamina.h"
 #include "animation.h"
 #include "position.h"
 #include "body.h"
