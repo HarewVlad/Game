@@ -1,7 +1,15 @@
 // TODO: Remove OpenGL from Utility
 // TOOD: Make like OpenGL, Android, Utility
+
+namespace Game {
+  const glm::vec2 GetEnemyPosition(const glm::vec2& size) {
+    return glm::vec2(1 + rand() % (int)size.x, size.y * 0.8f + rand() % (int)size.y * 0.9f);
+  }
+}
+
 namespace Utility {
   void Wait(int milliseconds);
+  void LinkPath(char *result, const char *a, const char *b);
 
 namespace OpenGL {
 // #define ASSERT(x) if (!(x)) __debugbreak();

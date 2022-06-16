@@ -1,61 +1,21 @@
 // TODO: Make it easier to create animations lol
 
-void Engine::Initialize(WindowManager *window_manager, ImGuiManager *imgui_manager, PathManager *path_manager, InputManager *input_manager) {
-  m_window_manager = window_manager;
-  m_input_manager = input_manager;
-  m_imgui_manager = imgui_manager;
-  m_path_manager = path_manager;
-
-  // Systems
-  // TODO: Think about systems and how can we add custom systems (Steel code from Unity DOTS i guess=))
-  m_camera_system.Initialize({0, 0});
-  m_renderer_system.Initialize(window_manager);
-  m_physics_system.Initialize(GRAVITY);
-  m_collision_system.Initialize();
-  m_follow_system.Initialize(window_manager);
-  m_interface_system.Initialize(imgui_manager);
-
-  // Entity manager
-  m_entity_manager.Initialize(&m_camera_system, &m_renderer_system, &m_physics_system, &m_collision_system, &m_follow_system, &m_control_system, &m_interface_system);
+void Engine::Initialize(PlatformManager *platform_manager, AssetManager *asset_manager) {
+  m_platform_manager = platform_manager;
+  m_asset_manager = asset_manager;
 }
 
-void Engine::Start() {
-  IndexBuffer index_buffer;
-  index_buffer.Initialize();
+void Engine::Script() {
+  // Animations test
 
-  VertexBufferLayout vertex_buffer_layout;
-  vertex_buffer_layout.Initialize();
+  // Animations
+  for (int i = 0; i < sizeof(Global_AnimationInfo) / sizeof(AnimationInfo); ++i) {
+    char *fmt = Global_AnimationInfo[i].m_fmt;
+    int size = Global_AnimationInfo[i].m_size;
 
-  // Background
-  Texture background_texture;
-  m_path_manager->GetTexture(&background_texture, "background.png");
-  m_entity_manager.AddTexture(background_texture);
-
-  // Player
-  Texture player_idle_textures[4];
-  Texture player_run_textures[8];
-  m_path_manager->GetTextures(player_idle_textures, 4, "player/idle/%d.png");
-  m_path_manager->GetTextures(player_run_textures, 8, "player/run/%d.png");
-
-  // Enemy
-  Texture enemy_bear_textures[4];
-  Texture enemy_bandit_textures[4];
-  Texture enemy_golem_textures[6];
-  Texture enemy_ent_textures[4];
-  m_path_manager->GetTextures(enemy_bear_textures, 4, "bear/%d.png");
-  m_path_manager->GetTextures(enemy_bandit_textures, 4, "bandit/%d.png");
-  m_path_manager->GetTextures(enemy_golem_textures, 6, "golem/%d.png");
-  m_path_manager->GetTextures(enemy_ent_textures, 4, "ent/%d.png");
-
-  // Get animation ranges
-  Range player_idle_range = m_entity_manager.AddTextures(player_idle_textures, 4);
-  Range player_run_range = m_entity_manager.AddTextures(player_run_textures, 8);
-
-  Range enemy_animation_ranges[4];
-  enemy_animation_ranges[0] = m_entity_manager.AddTextures(enemy_bear_textures, 4);
-  enemy_animation_ranges[1] = m_entity_manager.AddTextures(enemy_bandit_textures, 4);
-  enemy_animation_ranges[2] = m_entity_manager.AddTextures(enemy_golem_textures, 6);
-  enemy_animation_ranges[3] = m_entity_manager.AddTextures(enemy_ent_textures, 4);
+    Texture *textures = m_asset_manager->GetTextures(fmt, size);
+    m_entity_manager.AddComponent<Array<Texture>>(i, Array<Texture> {textures});
+  }
 
   // Shaders
   Shader vertex_shader;
@@ -100,352 +60,170 @@ void Engine::Start() {
     program.Link();
   }
 
+  // Systems
+  AnimationSystem *animation_system = GetSystem<AnimationSystem>();
+  ControlSystem *control_system = GetSystem<ControlSystem>();
+  MovementSystem *movement_system = GetSystem<MovementSystem>();
+  PhysicsSystem *physics_system = GetSystem<PhysicsSystem>();
+  CollisionSystem *collision_system = GetSystem<CollisionSystem>();
+  PlayerResetSystem *player_reset_system = GetSystem<PlayerResetSystem>();
+  EnemyResetSystem *enemy_reset_system = GetSystem<EnemyResetSystem>();
+  EffectSystem *effect_system = GetSystem<EffectSystem>();
+
+  // Renderers
+  BoxRenderer *box_renderer = GetRenderer<BoxRenderer>();
+  InterfaceRenderer *interface_renderer = GetRenderer<InterfaceRenderer>();
+
   // Background
   Box background_box;
-  VertexArray background_vertex_array;
-  float background_width = m_window_manager->m_size.x;
-  float background_height = m_window_manager->m_size.y;
-  {
-    VertexBuffer vertex_buffer;
-    vertex_buffer.Initialize(background_width, background_height); // TODO: Why not just pass glm::vec2?
+  background_box.Initialize(m_platform_manager->m_size);
 
-    // Vertex buffer layout
-    vertex_buffer_layout.Push(GL_FLOAT, 2);
-    vertex_buffer_layout.Push(GL_FLOAT, 2);
+  Position background_position {{0, 0}};
 
-    // Vertex array
-    background_vertex_array.Initialize();
-    background_vertex_array.AddBuffer(&vertex_buffer, &vertex_buffer_layout);
+  Texture background_texture = m_asset_manager->GetTexture("background.png");
 
-    background_box.Initialize(&index_buffer, &background_vertex_array);
-  }
+  RenderInfo background_render_info = {TextureType_Single, 1};
 
-  Position background_position;
-  background_position.Initialize({0, 0});
+  Entity entity = m_entity_manager.CreateEntity();
+  m_entity_manager.AddComponent<Box>(entity, background_box);
+  m_entity_manager.AddComponent<Program>(entity, program);
+  m_entity_manager.AddComponent<Position>(entity, background_position);
+  m_entity_manager.AddComponent<Texture>(entity, background_texture);
+  m_entity_manager.AddComponent<RenderInfo>(entity, background_render_info);
 
-  m_entity_manager.SetEntity(0);
-  m_entity_manager.AddBox(background_box);
-  m_entity_manager.AddProgram(program);
-  m_entity_manager.AddPosition(background_position);
-  m_entity_manager.AddToRenderer(ImageType::TEXTURE);
+  box_renderer->AddEntity(entity);
 
   // Player
-
-  // Custom player components
-  enum class PlayerState {
-    IDLE,
-    RUN
-  };
-
-  State player_state;
-  player_state.Initialize((int)PlayerState::IDLE);
-
-  Health player_health;
-  player_health.Initialize(3);
-
-  Score player_score;
-  player_score.Initialize();
-  //
-
-  Animation player_animation;
-  player_animation.Initialize();
-  player_animation.Add((int)PlayerState::IDLE, player_idle_range);
-  player_animation.Add((int)PlayerState::RUN, player_run_range);
+  const glm::vec2 player_size = {100, 100};
 
   Box player_box;
-  VertexBuffer player_vertex_buffer;
-  VertexArray player_vertex_array;
-  float player_width = 100;
-  float player_height = 100;
+  player_box.Initialize(player_size);
 
   float player_vertices[] = {0, 0, 0.0f, 0.0f,
-                         0, player_height,  0.0f, 1.0f,
-                         player_width,  player_height,  1.0f, 1.0f,
-                         player_width,  0, 1.0f, 0.0f};
+                         0, player_size.y,  0.0f, 1.0f,
+                         player_size.x,  player_size.y,  1.0f, 1.0f,
+                         player_size.x,  0, 1.0f, 0.0f};
 
   float player_vertices_flipped[] = {0, 0, 1.0f, 0.0f,
-                     0, player_height,  1.0f, 1.0f,
-                     player_width,  player_height,  0.0f, 1.0f,
-                     player_width,  0, 0.0f, 0.0f};
-
-  {
-    player_vertex_buffer.Initialize(player_width, player_height);
-
-    player_vertex_array.Initialize();
-    player_vertex_array.AddBuffer(&player_vertex_buffer, &vertex_buffer_layout);
-
-    player_box.Initialize(&index_buffer, &player_vertex_array);
-  }
+                     0, player_size.y,  1.0f, 1.0f,
+                     player_size.x,  player_size.y,  0.0f, 1.0f,
+                     player_size.x,  0, 0.0f, 0.0f};
 
   Position player_position;
-  player_position.Initialize({m_window_manager->m_size.x * 0.5f, 80});
+  player_position.Initialize({m_platform_manager->m_size.x * 0.5f, 80});
 
   Movement player_movement;
-  player_movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
+  player_movement.Initialize({10, 0}, {10, 0}, 1, 0);
 
-  Body player_body;
-  player_body.Initialize(BodyType::NORMAL, {player_width, player_height});
+  Body player_body {BodyType_Box, player_size};
 
-  EffectBlink player_effect_blink;
-  player_effect_blink.Initialize(1, 12.0f);
+  Health player_health {3};
 
-  m_entity_manager.SetEntity(1);
-  m_entity_manager.AddBox(player_box);
-  m_entity_manager.AddAnimation(player_animation);
-  m_entity_manager.AddProgram(program);
-  m_entity_manager.AddPosition(player_position);
-  m_entity_manager.AddMovement(player_movement);
-  m_entity_manager.AddBody(player_body);
-  m_entity_manager.AddToRenderer(ImageType::ANIMATION);
-  m_entity_manager.AddBlink(1, player_effect_blink);
-  m_entity_manager.SetToControl();
-  m_entity_manager.SetToInterface();
+  Score player_score;
 
-  // Arena size
-  int arena_width = m_window_manager->m_size.x;
-  int arena_height = m_window_manager->m_size.y * 1.5f;
+  Effect player_effect;
+  player_effect.Initialize(1, 12.0f);
 
-  // Bear, Bandit, Golem
-  auto GetEnemyPositionX = [](int width) {
-    return 1 + rand() % width;
-  };
+  Animation player_animation {AnimationType_PlayerIdle};
 
-  auto GetEnemyPositionY = [](int height) {
-    return height * 0.8f + rand() % height * 0.9f;
-  };
+  RenderInfo player_render_info {TextureType_Animation, 1};
 
-  const int enemies_count = 10;
-  const int enemy_types = 4;
-
-  Animation enemy_animations[enemies_count];
-  for (int i = 0; i < sizeof(enemy_animations) / sizeof(Animation); ++i) {
-    enemy_animations[i].Initialize();
-    enemy_animations[i].Add(0, enemy_animation_ranges[i % enemy_types]);
-  }
-
-  Box enemy_boxes[enemies_count];
-  VertexArray enemy_vertex_arrays[enemies_count];
-  for (int i = 0; i < enemies_count; ++i) {
-    // Box
-    float width = 50;
-    float height = 50;
-    {
-      VertexBuffer vertex_buffer;
-      vertex_buffer.Initialize(width, height);
-
-      enemy_vertex_arrays[i].Initialize();
-      enemy_vertex_arrays[i].AddBuffer(&vertex_buffer, &vertex_buffer_layout);
-
-      enemy_boxes[i].Initialize(&index_buffer, &enemy_vertex_arrays[i]);
-    }
-
-    // Position
-    int x = GetEnemyPositionX(arena_width);
-    int y = GetEnemyPositionY(arena_height);
-
-    Position position;
-    position.Initialize({x, y});
-
-    // Movement
-    Movement movement;
-    movement.Initialize({10, 0}, {10, 0}, 1.0f, 0);
-
-    // Body
-    Body body;
-    body.Initialize(BodyType::NORMAL, {width, height});
-
-    // Entities
-    m_entity_manager.SetEntity(i + 2);
-    m_entity_manager.AddBox(enemy_boxes[i]);
-    m_entity_manager.AddAnimation(enemy_animations[i]);
-    m_entity_manager.AddProgram(program);
-    m_entity_manager.AddPosition(position);
-    m_entity_manager.AddMovement(movement);
-    m_entity_manager.AddBody(body);
-    m_entity_manager.AddToRenderer(ImageType::ANIMATION);
-    m_entity_manager.AddToPhysics();
-    m_entity_manager.AddToCollision(1, i + 2);
-
-    // Score area // TODO: FIX BUG
-    Body score_body;
-    score_body.Initialize(BodyType::NORMAL, {width * 3, height * 3});
-
-    // m_entity_manager.AddPositionReference(i + 2 + enemies_count, i + 2);
-    // m_entity_manager.AddPosition(i + 123123, position);
-    // m_entity_manager.AddBody(i + 123123, score_body);
-    // m_entity_manager.AddToCollision(1, i + 123123);
-  }
+  entity = m_entity_manager.CreateEntity();
+  m_entity_manager.AddComponent<Box>(entity, player_box);
+  m_entity_manager.AddComponent<Animation>(entity, player_animation);
+  m_entity_manager.AddComponent<Program>(entity, program);
+  m_entity_manager.AddComponent<Position>(entity, player_position);
+  m_entity_manager.AddComponent<Movement>(entity, player_movement);
+  m_entity_manager.AddComponent<Body>(entity, player_body);
+  m_entity_manager.AddComponent<Health>(entity, player_health);
+  m_entity_manager.AddComponent<Score>(entity, player_score);
+  m_entity_manager.AddComponent<RenderInfo>(entity, player_render_info);
+  m_entity_manager.AddComponent<Effect>(entity, player_effect);
+  
+  control_system->AddEntity(entity);
+  animation_system->AddEntity(entity);
+  movement_system->AddEntity(entity);
+  player_reset_system->AddEntity(entity);
+  collision_system->AddEntity(entity, CollisionGroup_Player);
+  effect_system->AddEntity(entity, EffectType_Blink);
+  interface_renderer->AddEntity(entity);
+  box_renderer->AddEntity(entity);
 
   // Arena
+  const glm::vec2 arena_size = {m_platform_manager->m_size.x, m_platform_manager->m_size.y * 1.5f};
+
   Position arena_position;
   arena_position.Initialize({0, 0});
 
   Body arena_body;
-  arena_body.Initialize(BodyType::BOUNDING, {arena_width, arena_height});
+  arena_body.Initialize(BodyType_BoundingBox, arena_size);
 
-  m_entity_manager.AddPosition(2 + enemies_count, arena_position);
-  m_entity_manager.AddBody(2 + enemies_count, arena_body);
+  entity = m_entity_manager.CreateEntity();
+  m_entity_manager.AddComponent<Position>(entity, arena_position);
+  m_entity_manager.AddComponent<Body>(entity, arena_body);
 
-  for (int i = 2; i < 2 + enemies_count; ++i) {
-    m_entity_manager.AddToCollision(2 + enemies_count, i);
+  collision_system->AddEntity(entity, CollisionGroup_Arena);
+
+  // Bear, Bandit, Golem
+  const int enemies_count = 10;
+  const int enemy_types = 4;
+  const glm::vec2 enemy_size = {50, 50};
+
+  for (int i = 0; i < enemies_count; ++i) {
+    int animation_type = Global_AnimationInfo[2 + i % (sizeof(Global_AnimationInfo) / sizeof(AnimationInfo) - 2)].m_type; // NOTE(Vlad): Done to avoid user animation
+    Animation animation {animation_type};
+
+    Box box;
+    box.Initialize(enemy_size);
+
+    Position position;
+    position.Initialize(Game::GetEnemyPosition(arena_size));
+
+    Movement movement;
+    movement.Initialize({10, 0}, {10, 0}, 1, 0.005f);
+
+    Body body {BodyType_Box, enemy_size};
+
+    RenderInfo render_info {TextureType_Animation, 1};
+
+    entity = m_entity_manager.CreateEntity();
+    m_entity_manager.AddComponent<Box>(entity, box);
+    m_entity_manager.AddComponent<Animation>(entity, animation);
+    m_entity_manager.AddComponent<Program>(entity, program);
+    m_entity_manager.AddComponent<Position>(entity, position);
+    m_entity_manager.AddComponent<Movement>(entity, movement);
+    m_entity_manager.AddComponent<Body>(entity, body);
+    m_entity_manager.AddComponent<RenderInfo>(entity, render_info);
+
+    animation_system->AddEntity(entity);
+    movement_system->AddEntity(entity);
+    physics_system->AddEntity(entity);
+    enemy_reset_system->AddEntity(entity);
+    collision_system->AddEntity(entity, CollisionGroup_Enemy);
+    box_renderer->AddEntity(entity);
+
+    // TODO: Score area
   }
 
-  // Player constraint
-  Position player_constraint_position;
-  player_constraint_position.Initialize({0, 0});
-
-  Body player_constraint_body;
-  player_constraint_body.Initialize(BodyType::BOUNDING, {m_window_manager->m_size.x, m_window_manager->m_size.y});
-
-  m_entity_manager.AddPosition(2 + enemies_count * 2 + 1, player_constraint_position);
-  m_entity_manager.AddBody(2 + enemies_count * 2 + 1, player_constraint_body);
-  m_entity_manager.AddToCollision(2 + enemies_count * 2 + 1, 1);
-
-  auto GameReset = [&]() {
-    // Player
-    player_health.Initialize(3);
-    player_score.Initialize();
-
-    // Enemies
-    // TODO: Adequate method of storing and accessing entities through entity id
-    for (int i = 0; i < enemies_count; ++i) {
-      Position &position = m_entity_manager.m_positions.Value(i + 2);
-      position.m_xy.x = GetEnemyPositionX(arena_width);
-      position.m_xy.y = GetEnemyPositionY(arena_height);
-
-      Movement &movement = m_entity_manager.m_movements[i + 2];
-      movement.m_velocity = {0, 0};
-      movement.m_acceleration = {0, 0};
-    }
-
-    Global_GameState = GameState::RUN;
-  };
-
-  // Callbacks
-  m_collision_system.SetOnNormalCollision([&](int a, int b) {
-    EffectBlink &player_effect_blink = m_entity_manager.m_effect_blinks.Value(a);
-    if (!player_effect_blink.IsExecuting()) {
-      --player_health.m_value;
-      ++player_score.m_value;
-
-      player_effect_blink.Start();
-    }
-
-    if (!player_health.m_value) {
-      GameReset();
-    }
-  });
-
-  m_collision_system.SetOnBoundingCollision([&](int b) {
-    Position &position = m_entity_manager.m_positions.Value(b);
-    if (b != 1) { // TODO: Add complete list of objects
-      position.m_xy.x = GetEnemyPositionX(arena_width);
-      position.m_xy.y = GetEnemyPositionY(arena_height);
-    } else { // Player
-      if (position.m_xy.x < 0) // NOTE(Vlad): If we collided on left side.
-        position.m_xy.x = m_window_manager->m_size.x * 0.95f;
-      else
-        position.m_xy.x = 0;
-    }
-  });
-
-// m_control_system.SetOnInputPlayer([&](int id, float dt) {
-//   Movement &movement = m_entity_manager.m_movements[id];
-//   Animation &animation = m_entity_manager.m_animations.Value(id);
-//
-//   if (m_input_manager->IsKeyPressed(GLFW_KEY_A)) { // TODO: Replace with InputManager later for Android and other
-//     movement.m_velocity.x -= 200.0f;
-//     player_state.m_value = (int)PlayerState::RUN;
-//     animation.SetAnimation((int)PlayerState::RUN);
-//     player_vertex_buffer.BindData(&player_vertices_flipped, sizeof(player_vertices_flipped));
-//   } else if (m_input_manager->IsKeyPressed(GLFW_KEY_D)) {
-//     movement.m_velocity.x += 200.0f;
-//     player_state.m_value = (int)PlayerState::RUN;
-//     animation.SetAnimation((int)PlayerState::RUN);
-//     player_vertex_buffer.BindData(&player_vertices, sizeof(player_vertices));
-//   } else {
-//     player_state.m_value = (int)PlayerState::IDLE;
-//     animation.SetAnimation((int)PlayerState::IDLE);
-//   }
-// });
-
-// m_control_system.SetOnInputGlobal([&](float dt) {
-//   if (m_input_manager->IsKeyPressed(GLFW_KEY_ESCAPE)) {
-//     Global_GameState = GameState::MENU;
-//   }
-// });
-
-  m_interface_system.SetRender([&](int id) { // TODO: Make ISystem derived, so user can specify system and bind it to EntityManager?
-    ImGuiIO &io = ImGui::GetIO();
-
-    ImGui::SetNextWindowPos(ImVec2(0, 0), 0, ImVec2(0, 0));
-    ImGui::SetNextWindowSize(io.DisplaySize);
-    ImGui::SetNextWindowBgAlpha(0);
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-    ImGui::Begin("Interface", NULL,
-                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
-                     ImGuiWindowFlags_NoBringToFrontOnFocus |
-                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-                     ImGuiWindowFlags_NoScrollbar);
-
-    switch (Global_GameState) {
-      case GameState::MENU: {
-        ImVec2 button_size = {100, 100};
-        ImGui::SetCursorPos({io.DisplaySize.x / 2.0f - button_size.x * 0.5f, io.DisplaySize.y / 2.0f - button_size.y * 3});
-        if (ImGui::Button("Play", button_size)) {
-          Global_GameState = GameState::RUN;
-        }
-        ImGui::SetCursorPosX(io.DisplaySize.x / 2.0f - button_size.x * 0.5f);
-        if (ImGui::Button("Reset", button_size)) {
-          GameReset();
-        }
-
-        ImGui::SetCursorPosX(io.DisplaySize.x / 2.0f - button_size.x * 0.5f);
-        ImGui::Button("About", button_size);
-        ImGui::SetCursorPosX(io.DisplaySize.x / 2.0f - button_size.x * 0.5f);
-        if (ImGui::Button("Exit", button_size)) {
-          Global_GameState = GameState::EXIT;
-        }
-      }
-      break;
-      case GameState::RUN: {
-        ImGui::Text("Health: %d", player_health.m_value);
-        ImGui::SetCursorPosX(io.DisplaySize.x / 2);
-        ImGui::Text("Score: %d", player_score.m_value);
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate); 
-      }
-      break;
-      default:
-      break;
-    }
-    ImGui::PopStyleVar(2);
-    ImGui::End();
-  });
-
-  // Set initial state
-  Global_GameState = GameState::MENU;
-
-  // NOTE(Vlad): Call it here, because have some issues with storage of some structs, need to think about it later
-  Loop();
+  // Initial state
+  Global_GameState = GameState_Menu;
 }
 
 void Engine::Loop() {
   int old_time = GetMilliseconds();
   int extra_time = 0;
   int frame_time = 1000 / MAX_FPS;
-  while (!m_window_manager->WindowShouldClose() && Global_GameState != GameState::EXIT) {
+  while (!m_platform_manager->ShouldClose() && Global_GameState != GameState_Exit) {
     int new_time = GetMilliseconds();
     int time = new_time - old_time;
 
-    ////// FRAME ///////
+    /////// FRAME ///////
 
-    if (m_window_manager->IsWindowFocused()) {
+    if (m_platform_manager->IsFocused()) {
       extra_time += time;
 
       while (extra_time >= frame_time) {
-        m_window_manager->PollEvents();
+        m_platform_manager->PollEvents();
 
         Update(frame_time / 1000.0f);
 
@@ -454,12 +232,12 @@ void Engine::Loop() {
       
       Render();
     } else {
-      Utility::Wait(5);
+      Utility::Wait(1);
 
-      m_window_manager->PollEvents();
+      m_platform_manager->PollEvents();
     }
 
-    m_window_manager->SwapBuffers();
+    m_platform_manager->SwapBuffers();
 
     /////// END FRAME ///////
 
@@ -474,12 +252,42 @@ void Engine::Render() {
   glCall(glEnable(GL_BLEND));
   glCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
-  // TODO: Do i need that?
-  glViewport(0, 0, m_window_manager->m_size.x, m_window_manager->m_size.y);
+  // NOTE(Vlad): Do you need that?
+  glViewport(0, 0, m_platform_manager->m_size.x, m_platform_manager->m_size.y);
 
-  m_entity_manager.Render();
+  for (int i = 0; i < hmlen(m_renderers); ++i) {
+    m_renderers[i].value->Render(&m_entity_manager);
+  }
 }
 
 void Engine::Update(float dt) {
-  m_entity_manager.Update(dt);
+  if (Global_GameState != GameState_Menu) {
+    for (int i = 0; i < hmlen(m_systems); ++i) {
+      m_systems[i].value->Update(&m_entity_manager, dt);
+    }
+  }
+}
+
+template <typename T>
+void Engine::AddSystem(ISystem *system) {
+  std::type_index type_index = std::type_index(typeid(T));
+  hmput(m_systems, type_index, system);
+}
+
+template <typename T>
+T *Engine::GetSystem() {
+  std::type_index type_index = std::type_index(typeid(T));
+  return (T *)hmget(m_systems, type_index);
+}
+
+template <typename T>
+void Engine::AddRenderer(IRenderer *renderer) {
+  std::type_index type_index = std::type_index(typeid(T));
+  hmput(m_renderers, type_index, renderer);
+}
+
+template <typename T>
+T *Engine::GetRenderer() {
+  std::type_index type_index = std::type_index(typeid(T));
+  return (T *)hmget(m_renderers, type_index);
 }

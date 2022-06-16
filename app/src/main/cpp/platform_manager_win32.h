@@ -1,8 +1,8 @@
-struct WindowManagerWin32 : public WindowManager {
+struct PlatformManagerWin32 : public PlatformManager {
   void Initialize(const glm::vec2& size, const char *title);
-  bool WindowShouldClose() override;
+  bool ShouldClose() override;
   int GetWindowFlag(int flag);
-  bool IsWindowFocused() override;
+  bool IsFocused() override;
   void SwapBuffers() override;
   void PollEvents() override;
 

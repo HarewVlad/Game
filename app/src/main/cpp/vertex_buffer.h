@@ -1,6 +1,6 @@
 struct VertexBuffer {
   void Initialize(const void *data, unsigned int size);
-  void Initialize(float width, float height);
+  void Initialize(const glm::vec2& size);
   void Bind();
   void Unbind();
   void Shutdown();

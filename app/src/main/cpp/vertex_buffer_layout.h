@@ -5,9 +5,8 @@ struct VertexBufferElement {
 };
 
 struct VertexBufferLayout {
-  void Initialize();
   void Push(unsigned int type, unsigned int count, unsigned char normilized = GL_FALSE);
 
-  VertexBufferElement *m_elements;
-  unsigned int m_stride;
+  VertexBufferElement *m_elements = NULL;
+  unsigned int m_stride = 0;
 };

@@ -1,8 +1,8 @@
-void PathManagerAndroid::Initialize(AAssetManager *asset_manager) {
+void AssetManagerAndroid::Initialize(AAssetManager *asset_manager) {
   m_asset_manager = asset_manager;
 }
 
-int PathManagerAndroid::GetData(const char *path, void **data) {
+int AssetManagerAndroid::GetData(const char *path, void **data) {
   int result = 0;
 
   AAsset *asset_descriptor =
@@ -18,14 +18,17 @@ int PathManagerAndroid::GetData(const char *path, void **data) {
   return result;
 }
 
-void PathManagerAndroid::GetTexture(Texture *texture, const char *path) {
+void AssetManagerAndroid::GetTexture(const char *path) {
+  Texture result = {};
+
   void *data;
   int bytes = GetData(path, &data);
 
-  texture->Initialize(data, bytes);
+  result.Initialize(data, bytes);
+  return result;
 }
 
-void PathManagerAndroid::GetTextures(Texture *textures, int size, const char *fmt) {
+void AssetManagerAndroid::GetTextures(Texture *textures, int size, const char *fmt) {
   char buffer[256] = {};
   void *data;
   int bytes;

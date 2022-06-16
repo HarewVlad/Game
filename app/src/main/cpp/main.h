@@ -11,10 +11,14 @@
 #include <iostream>
 #include <functional>
 #include <thread>
+#include <unordered_map>
+#include <typeinfo>
+#include <typeindex>
 ///
 
 // C
 #include <stdlib.h>
+#include <assert.h>
 ///
 
 #ifdef __ANDROID__
@@ -26,88 +30,89 @@
   #include <GLES3/gl3.h>
 #elif defined _WIN32
   #include "Windows.h"
-  #include "gl\glew.h"
-  #include "glfw\glfw3.h"
+  #include "vendor/gl/glew.h"
+  #include "vendor/glfw/glfw3.h"
 #endif
 
-#include "imgui/imgui.h"
+#include "vendor/imgui/imgui.h"
 #ifdef __ANDROID__
-  #include "imgui/imgui_impl_android.h"
+  #include "vendor/imgui/imgui_impl_android.h"
 #elif defined _WIN32
-  #include "imgui/imgui_impl_glfw.h"
+  #include "vendor/imgui/imgui_impl_glfw.h"
 #endif
-#include "imgui/imgui_impl_opengl3.h"
-#include "stb/stb_image.h"
-#include "stb/stb_ds.h"
-#include "glm/glm.hpp"
-#include "glm/gtx/transform.hpp"
-#include "glm/ext/matrix_clip_space.hpp"
+#include "vendor/imgui/imgui_impl_opengl3.h"
+#include "vendor/stb/stb_image.h"
+#include "vendor/stb/stb_ds.h"
+#include "vendor/glm/glm.hpp"
+#include "vendor/glm/gtx/transform.hpp"
+#include "vendor/glm/ext/matrix_clip_space.hpp"
 
-static const char *ASSETS_PATH = "..\\assets\\";
-static const glm::mat4 IDENTITY = glm::mat4(1.0f);
-static const int MAX_FPS = 60;
-static const int MIN_ALLOCATION_SIZE = 100;
-static const glm::vec2 WINDOW_SIZE = {1920, 1080};
-static const char *TITLE = "Game";
-static const glm::vec2 GRAVITY = {0, -50.0f};
+#include "config.h"
 
-enum class GameState {
-  NONE,
-  READY, // NOTE(Vlad): Primary for Android
-  MENU,
-  RUN,
-  // NOTE(Vlad): Insert your states
-  GAME_OVER,
-  //
-  EXIT
+enum GameState {
+  GameState_None = 0,
+  GameState_Ready = 1 << 0,
+  GameState_Menu = 1 << 1,
+  GameState_Run = 1 << 2,
+  GameState_PlayerReset = 1 << 3,
+  GameState_EnemyReset = 1 << 4,
+  GameState_Reset = GameState_PlayerReset | GameState_EnemyReset,
+  GameState_GameOver = 1 << 4,
+  GameState_Exit = 1 << 5
 };
 
-static GameState Global_GameState = GameState::NONE;
+static int Global_GameState = GameState_None;
 
 #include "log.h"
 #include "utility.h"
 #include "time.h"
 #include "range.h"
 #include "input_manager.h"
-#include "window_manager.h"
+#include "platform_manager.h"
 #include "texture.h"
-#include "path_manager.h"
+#include "asset_manager.h"
 #ifdef __ANDROID__
   #include "egl_manager.h"
-  #include "path_manager_android.h"
+  #include "asset_manager_android.h"
 #elif defined _WIN32
-  #include "window_manager_win32.h"
+  #include "platform_manager_win32.h"
   #include "input_manager_win32.h"
-  #include "path_manager_win32.h"
+  #include "asset_manager_win32.h"
 #endif
 
+#include "entity_manager.h"
+#include "animation_type.h"
+#include "system.h"
+#include "renderer.h"
 #include "vertex_buffer_layout.h"
 #include "vertex_buffer.h"
 #include "index_buffer.h"
 #include "vertex_array.h"
 #include "box.h"
-#include "state.h"
 #include "shader.h"
 #include "program.h"
 #include "animation.h"
 #include "position.h"
-#include "follow_system.h"
 #include "body.h"
 #include "movement.h"
-#include "camera_system.h"
+#include "camera.h"
+#include "effect_system.h"
+#include "player_reset_system.h"
+#include "enemy_reset_system.h"
 #include "control_system.h"
 #include "health.h"
-#include "renderer_system.h"
+#include "box_renderer.h"
 #include "collision_system.h"
+#include "movement_system.h"
 #include "physics_system.h"
+#include "animation_system.h"
 #include "imgui_manager.h"
-#include "interface_system.h"
+#include "interface_renderer.h"
 #include "score.h"
-#include "effects/effect_blink.h"
-#include "entity_manager.h"
+#include "effect.h"
 #ifdef __ANDROID__
   #include "imgui_manager_android.h"
-  #include "android_manager.h"
+  #include "window_manager_android.h"
 #elif defined _WIN32
   #include "imgui_manager_win32.h"
 #endif

@@ -1,25 +1,26 @@
 struct Engine {
-  void Initialize(WindowManager *window_manager, ImGuiManager *imgui_manager, PathManager *path_manager, InputManager *input_manager);
-  void Start();
+  void Initialize(PlatformManager *platform_manager, AssetManager *asset_manager);
+  void Script();
   void Loop();
   void Render();
   void Update(float dt);
+  template <typename T>
+  void AddSystem(ISystem *system);
+  template <typename T>
+  T *GetSystem();
+  template <typename T>
+  void AddRenderer(IRenderer *renderer);
+  template <typename T>
+  T *GetRenderer();
 
   // Essentials
-  InputManager *m_input_manager;
-  WindowManager *m_window_manager;
-  ImGuiManager *m_imgui_manager;
-  PathManager *m_path_manager;
-
-  // Systems
-  CameraSystem m_camera_system;
-  RendererSystem m_renderer_system;
-  PhysicsSystem m_physics_system;
-  CollisionSystem m_collision_system;
-  FollowSystem m_follow_system;
-  ControlSystem m_control_system;
-  InterfaceSystem m_interface_system;
+  PlatformManager *m_platform_manager;
+  AssetManager *m_asset_manager;
 
   // Entity manager
   EntityManager m_entity_manager;
+
+  // Systems
+  Map<std::type_index, ISystem *> *m_systems = NULL;
+  Map<std::type_index, IRenderer *> *m_renderers = NULL; // NOTE(Vlad): Mb do something else
 };

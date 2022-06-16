@@ -3,11 +3,11 @@ void VertexBuffer::Initialize(const void *data, unsigned int size) {
   BindData(data, size);
 }
 
-void VertexBuffer::Initialize(float width, float height) {
+void VertexBuffer::Initialize(const glm::vec2& size) {
   float vertices[] = {0, 0, 0.0f, 0.0f,
-                         0, height,  0.0f, 1.0f,
-                         width,  height,  1.0f, 1.0f,
-                         width,  0, 1.0f, 0.0f};
+                         0, size.y,  0.0f, 1.0f,
+                         size.x,  size.y,  1.0f, 1.0f,
+                         size.x,  0, 1.0f, 0.0f};
   glCall(glGenBuffers(1, &m_id));
   BindData(&vertices, sizeof(vertices));
 }

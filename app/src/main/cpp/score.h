@@ -1,4 +1,3 @@
 struct Score {
-  void Initialize();
-  int m_value;
+  int m_value = 0;
 };

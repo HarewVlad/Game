@@ -1,7 +1,6 @@
-struct EffectBlink {
+struct Effect {
   void Initialize(float duration, float frequency);
   bool IsExecuting() const;
-  void Update(int *blink, float dt);
   void Start();
   void Stop();
 
