@@ -49,3 +49,9 @@ float Program::GetUniform1f(const char *name) {
   glCall(glGetUniformfv(m_id, location, &value));
   return value;
 }
+
+void Program::SetUniform2f(const char *name, const glm::vec2 &vec2) {
+  int location = GetUniformLocation(name);
+  assert(location >= 0);
+  glCall(glUniform2f(location, vec2.x, vec2.y));
+}

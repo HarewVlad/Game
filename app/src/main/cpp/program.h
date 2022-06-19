@@ -9,6 +9,7 @@ struct Program {
   void SetUniformMat4(const char *name, const glm::mat4 &mat4);
   void SetUniform1i(const char *name, int i);
   void SetUniform1f(const char *name, float i);
+  void SetUniform2f(const char *name, const glm::vec2 &vec2);
   float GetUniform1f(const char *name);
 
   unsigned int m_id;

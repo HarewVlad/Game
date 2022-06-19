@@ -1,11 +1,11 @@
-enum class BodyType {
-  NORMAL,
-  BOUNDING
+enum BodyType {
+  BodyType_Box,
+  BodyType_BoundingBox
 };
 
 struct Body {
-  void Initialize(BodyType type, const glm::vec2 &size);
+  void Initialize(int type, const glm::vec2 &size);
 
-  BodyType m_type;
-  glm::vec2 m_size;
+  int m_type;
+  glm::vec2 m_size = {};
 };

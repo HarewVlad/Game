@@ -1,19 +1,22 @@
-// Todo: Collision system is just straight garbage suitable for the game i making, but in future steal something smart
-
-struct CollisionSystem {
-  void Initialize();
-  void SetOnNormalCollision(const std::function<void(int, int)> on_collide);
-  void SetOnBoundingCollision(const std::function<void(int)> on_collide);
-  void Update(int ida, int idb, Body *ba, Body *bb, Position *pa, Position *pb, float dt);
-  bool TestAABBAABB(Body *a, Body *b, Position *pa, Position *pb);
-  bool TestAABBInsideAABB(Body *bounding, Body *internal, Position *bounding_position, Position *inner_position);
-
-  std::function<void(int, int)> m_on_collide_normal;
-  std::function<void(int)> m_on_collide_bounding;
+// TODO: Works for now, need to change later (May be replace with hashing lol)
+enum CollisionGroup_ {
+  CollisionGroup_None = 0,
+  CollisionGroup_Player = 1 << 0,
+  CollisionGroup_Enemy = 1 << 1,
+  CollisionGroup_Arena = 1 << 2
 };
 
-// NOTE(Vlad): "A" is object that wants to collide with "B"
-struct CollisionPair {
-  int a;
-  int b;
+enum CollisionType_ {
+  CollisionType_PlayerEnemy = CollisionGroup_Player | CollisionGroup_Enemy,
+  CollisionType_PlayerArena = CollisionGroup_Player | CollisionGroup_Arena,
+  CollisionType_EnemyArena = CollisionGroup_Enemy | CollisionGroup_Arena,
+};
+
+struct CollisionSystem : public ISystem {
+  void Update(EntityManager *entity_manager, float dt) override;
+  void AddEntity(Entity entity, int group);
+  bool TestAABBAABB(Body *ba, Body *bb, Position *pa, Position *pb);
+  bool TestAABBInsideAABB(Body *bounding, Body *internal, Position *bounding_position, Position *inner_position);
+  
+  int *m_collision_groups = NULL;
 };

@@ -7,6 +7,11 @@ namespace Utility {
     #endif
   }
 
+  void LinkPath(char *result, const char *a, const char *b) {
+    strcat(result, a);
+    strcat(result, b);
+  }
+
 // Unfortunately, there is no way to show the on-screen input from native code.
 // Therefore, we call ShowSoftKeyboardInput() of the main activity implemented
 // in MainActivity.kt via JNI.
