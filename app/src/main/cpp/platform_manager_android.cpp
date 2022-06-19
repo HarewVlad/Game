@@ -1,20 +1,20 @@
-int32_t WindowManagerAndroid::OnInputEvent(struct android_app *app, AInputEvent *input_event) {
+int32_t PlatformManagerAndroid::OnInputEvent(struct android_app *app, AInputEvent *input_event) {
   return ImGui_ImplAndroid_HandleInputEvent(input_event);
 }
 
-void WindowManagerAndroid::OnAppCmd(struct android_app *app, int32_t app_cmd) {
-  WindowManagerAndroid *window_manager_android = (WindowManagerAndroid *)app->userData;
+void PlatformManagerAndroid::OnAppCmd(struct android_app *app, int32_t app_cmd) {
+  PlatformManagerAndroid *platform_manager_android = (PlatformManagerAndroid *)app->userData;
 
   switch (app_cmd) {
   case APP_CMD_SAVE_STATE:
     break;
   case APP_CMD_INIT_WINDOW:
-    window_manager_android->OnInitialize();
-    Global_GameState = GameState::READY;
+    platform_manager_android->OnInitialize();
+    Global_GameState = GameState_Ready;
     break;
   case APP_CMD_TERM_WINDOW:    
-    window_manager_android->OnShutdown();
-    Global_GameState = GameState::EXIT;
+    platform_manager_android->OnShutdown();
+    Global_GameState = GameState_Exit;
     break;
   case APP_CMD_GAINED_FOCUS:
     break;
@@ -23,7 +23,7 @@ void WindowManagerAndroid::OnAppCmd(struct android_app *app, int32_t app_cmd) {
   }
 }
 
-void WindowManagerAndroid::OnInitialize() {
+void PlatformManagerAndroid::OnInitialize() {
   ANativeWindow_acquire(m_app->window);
 
   int width = ANativeWindow_getWidth(m_app->window);
@@ -38,13 +38,13 @@ void WindowManagerAndroid::OnInitialize() {
   m_egl_manager->Initialize(m_app->window);
 }
 
-void WindowManagerAndroid::OnShutdown() {
+void PlatformManagerAndroid::OnShutdown() {
   ANativeWindow_release(m_app->window);
 
   m_egl_manager->Shutdown();
 }
 
-void WindowManagerAndroid::Initialize(struct android_app *app, EglManager *egl_manager) {
+void PlatformManagerAndroid::Initialize(struct android_app *app, EglManager *egl_manager) {
   app->userData = this;
   app->onAppCmd = OnAppCmd;
   app->onInputEvent = OnInputEvent;
@@ -53,20 +53,20 @@ void WindowManagerAndroid::Initialize(struct android_app *app, EglManager *egl_m
   m_app = app;
 }
 
-bool WindowManagerAndroid::WindowShouldClose() {
+bool PlatformManagerAndroid::ShouldClose() {
   return m_app->destroyRequested != 0;
 }
 
-bool WindowManagerAndroid::IsWindowFocused() {
+bool PlatformManagerAndroid::IsFocused() {
   // TODO: Fix later
   return true;
 }
 
-void WindowManagerAndroid::SwapBuffers() {
+void PlatformManagerAndroid::SwapBuffers() {
   eglSwapBuffers(m_egl_manager->m_display, m_egl_manager->m_surface);
 }
 
-void WindowManagerAndroid::PollEvents() {
+void PlatformManagerAndroid::PollEvents() {
   int out_events;
   struct android_poll_source *out_data;
   while (ALooper_pollAll(0, NULL, &out_events,

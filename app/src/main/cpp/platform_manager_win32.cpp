@@ -7,10 +7,6 @@ void PlatformManagerWin32::FrameBufferSizeCallback(GLFWwindow *window, int width
                  static_cast<float>(height), -1000.0f, 1000.0f);
 }
 
-void PlatformManagerWin32::KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-  PlatformManagerWin32 *platform_manager_win32 = (PlatformManagerWin32 *)glfwGetWindowUserPointer(window);
-}
-
 void PlatformManagerWin32::Initialize(const glm::vec2& size, const char *title) {
   if (!glfwInit()) {
     LOG(LOG_ERROR, "WindowManagerWin32", "%s", "Unable to initialize GLFW");
@@ -32,7 +28,6 @@ void PlatformManagerWin32::Initialize(const glm::vec2& size, const char *title) 
   glfwMakeContextCurrent((GLFWwindow *)m_window);
   glfwSetWindowUserPointer((GLFWwindow *)m_window, this);
   glfwSetFramebufferSizeCallback((GLFWwindow *)m_window, FrameBufferSizeCallback);
-  glfwSetKeyCallback((GLFWwindow *)m_window, KeyCallback);
   glfwSwapInterval(0);
 
   GLenum error = glewInit();

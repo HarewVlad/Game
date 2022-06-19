@@ -18,8 +18,8 @@ int AssetManagerAndroid::GetData(const char *path, void **data) {
   return result;
 }
 
-void AssetManagerAndroid::GetTexture(const char *path) {
-  Texture result = {};
+Texture AssetManagerAndroid::GetTexture(const char *path) {
+  Texture result;
 
   void *data;
   int bytes = GetData(path, &data);
@@ -28,7 +28,9 @@ void AssetManagerAndroid::GetTexture(const char *path) {
   return result;
 }
 
-void AssetManagerAndroid::GetTextures(Texture *textures, int size, const char *fmt) {
+Texture *AssetManagerAndroid::GetTextures(const char *fmt, int size) {
+  Texture *result = NULL;
+
   char buffer[256] = {};
   void *data;
   int bytes;
@@ -37,6 +39,11 @@ void AssetManagerAndroid::GetTextures(Texture *textures, int size, const char *f
 
     bytes = GetData(buffer, &data);
 
-    textures[i].Initialize(data, bytes);
+    Texture texture;
+    texture.Initialize(data, bytes);
+
+    arrput(result, texture);
   }
+
+  return result;
 }

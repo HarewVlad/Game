@@ -61,20 +61,21 @@ enum GameState {
 
 static int Global_GameState = GameState_None;
 
+// TODO: Move it somewhere else
+
 #include "log.h"
 #include "utility.h"
 #include "time.h"
 #include "range.h"
-#include "input_manager.h"
 #include "platform_manager.h"
 #include "texture.h"
 #include "asset_manager.h"
 #ifdef __ANDROID__
   #include "egl_manager.h"
   #include "asset_manager_android.h"
+  #include "platform_manager_android.h"
 #elif defined _WIN32
   #include "platform_manager_win32.h"
-  #include "input_manager_win32.h"
   #include "asset_manager_win32.h"
 #endif
 
@@ -111,7 +112,6 @@ static int Global_GameState = GameState_None;
 #include "effect.h"
 #ifdef __ANDROID__
   #include "imgui_manager_android.h"
-  #include "window_manager_android.h"
 #elif defined _WIN32
   #include "imgui_manager_win32.h"
 #endif

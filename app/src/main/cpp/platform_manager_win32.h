@@ -7,5 +7,4 @@ struct PlatformManagerWin32 : public PlatformManager {
   void PollEvents() override;
 
   static void FrameBufferSizeCallback(GLFWwindow *window, int width, int height);
-  static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 };

@@ -20,12 +20,11 @@
 #include "vertex_array.cpp"
 #include "box.cpp"
 #ifdef __ANDROID__
-  #include "window_manager_android.cpp"
+  #include "platform_manager_android.cpp"
   #include "egl_manager.cpp"
   #include "asset_manager_android.cpp"
 #elif defined _WIN32
   #include "platform_manager_win32.cpp"
-  #include "input_manager_win32.cpp"
   #include "asset_manager_win32.cpp"
 #endif
 
@@ -90,21 +89,18 @@ int main() {
   PlatformManagerAndroid platform_manager;
   platform_manager.Initialize(app, &egl_manager);
 
-  while (Global_GameState != GameState::READY) {
+  while (Global_GameState != GameState_Ready) {
     platform_manager.PollEvents();
   }
 
   ImGuiManagerAndroid imgui_manager;
   imgui_manager.Initialize((ANativeWindow *)platform_manager.m_window);
 
-  PathManagerAndroid path_manager;
-  path_manager.Initialize(app->activity->assetManager);
+  AssetManagerAndroid asset_manager;
+  asset_manager.Initialize(app->activity->assetManager);
 #elif defined _WIN32
   PlatformManagerWin32 platform_manager;
   platform_manager.Initialize(WINDOW_SIZE, TITLE);
-
-  InputManagerWin32 input_manager;
-  input_manager.Initialize((GLFWwindow *)platform_manager.m_window);
 
   ImGuiManagerWin32 imgui_manager;
   imgui_manager.Initialize((GLFWwindow *)platform_manager.m_window);
@@ -124,7 +120,6 @@ int main() {
   physics_system.Initialize(GRAVITY);
 
   ControlSystem control_system;
-  control_system.Initialize(&input_manager);
 
   AnimationSystem animation_system;
   MovementSystem movement_system;
