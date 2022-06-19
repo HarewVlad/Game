@@ -1,3 +1,3 @@
 struct Score {
-  int m_value = 0;
+  int m_value;
 };
