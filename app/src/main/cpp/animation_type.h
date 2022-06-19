@@ -7,6 +7,11 @@ enum AnimationType {
   AnimationType_Golem,
 };
 
+enum PlayerAnimation {
+  PlayerAnimation_Idle = 4,
+  PlayerAnimation_Run = 7,
+};
+
 struct AnimationInfo {
   int m_type;
   int m_size;

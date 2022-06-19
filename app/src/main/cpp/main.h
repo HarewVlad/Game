@@ -80,11 +80,11 @@ static int Global_GameState = GameState_None;
 
 #include "entity_manager.h"
 #include "animation_type.h"
+#include "spritesheet.h"
 #include "system.h"
 #include "renderer.h"
 #include "vertex_buffer_layout.h"
-#include "vertex_buffer.h"
-#include "index_buffer.h"
+#include "buffer.h"
 #include "vertex_array.h"
 #include "box.h"
 #include "shader.h"

@@ -2,7 +2,7 @@ void VertexArray::Initialize() {
   glCall(glGenVertexArrays(1, &m_id));
 }
 
-void VertexArray::AddBuffer(VertexBuffer *vertex_buffer,
+void VertexArray::AddBuffer(Buffer *vertex_buffer,
                const VertexBufferLayout *vertex_buffer_layout) {
   glCall(glBindVertexArray(m_id));
   vertex_buffer->Bind();

@@ -1,6 +1,6 @@
 struct VertexArray {
   void Initialize();
-  void AddBuffer(VertexBuffer *vertex_buffer,
+  void AddBuffer(Buffer *vertex_buffer,
                  const VertexBufferLayout *vertex_buffer_layout);
   void Bind();
   void Unbind();

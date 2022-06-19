@@ -1,7 +1,8 @@
 enum TextureType {
   TextureType_None,
   TextureType_Single,
-  TextureType_Animation
+  TextureType_Animation, // TODO: Use spritesheet instead of array of textures
+  TextureType_Spritesheet // Test
 };
 
 struct RenderInfo {

@@ -16,8 +16,7 @@
 #include "utility.cpp"
 #include "time.cpp"
 #include "vertex_buffer_layout.cpp"
-#include "vertex_buffer.cpp"
-#include "index_buffer.cpp"
+#include "buffer.cpp"
 #include "vertex_array.cpp"
 #include "box.cpp"
 #ifdef __ANDROID__
@@ -32,6 +31,7 @@
 
 #include "entity_manager.cpp"
 #include "system.cpp"
+#include "spritesheet.cpp"
 #include "animation.cpp"
 #include "renderer.cpp"
 #include "shader.cpp"

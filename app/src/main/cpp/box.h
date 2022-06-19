@@ -4,8 +4,8 @@ struct Box {
   void Unbind();
   void Draw();
 
-  IndexBuffer m_index_buffer;
+  Buffer m_index_buffer;
+  Buffer m_vertex_buffer;
   VertexBufferLayout m_vertex_buffer_layout;
-  VertexBuffer m_vertex_buffer;
   VertexArray m_vertex_array;
 };

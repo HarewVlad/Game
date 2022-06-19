@@ -6,8 +6,6 @@ void Engine::Initialize(PlatformManager *platform_manager, AssetManager *asset_m
 }
 
 void Engine::Script() {
-  // Animations test
-
   // Animations
   for (int i = 0; i < sizeof(Global_AnimationInfo) / sizeof(AnimationInfo); ++i) {
     char *fmt = Global_AnimationInfo[i].m_fmt;
@@ -113,7 +111,7 @@ void Engine::Script() {
   player_position.Initialize({m_platform_manager->m_size.x * 0.5f, 80});
 
   Movement player_movement;
-  player_movement.Initialize({10, 0}, {10, 0}, 1, 0.005);
+  player_movement.Initialize(1, 0.005);
 
   Body player_body {BodyType_Box, player_size};
 
@@ -127,6 +125,13 @@ void Engine::Script() {
   player_effect.Initialize(1, 12.0f);
 
   Animation player_animation {AnimationType_PlayerIdle};
+
+  // Texture player_texture = m_asset_manager->GetTexture("premium_player/spritesheet.png");
+
+  // Spritesheet player_spritesheet;
+  // player_spritesheet.Initialize({8, 5});
+  // player_spritesheet.Add(PlayerAnimation_Idle, 5);
+  // player_spritesheet.Add(PlayerAnimation_Run, 4);
 
   RenderInfo player_render_info {TextureType_Animation, 1};
 
@@ -142,6 +147,8 @@ void Engine::Script() {
   m_entity_manager.AddComponent<RenderInfo>(entity, player_render_info);
   m_entity_manager.AddComponent<Effect>(entity, player_effect);
   m_entity_manager.AddComponent<Stamina>(entity, player_stamina);
+  // m_entity_manager.AddComponent<Texture>(entity, player_texture);
+  // m_entity_manager.AddComponent<Spritesheet>(entity, player_spritesheet);
   
   control_system->AddEntity(entity);
   animation_system->AddEntity(entity);
@@ -183,7 +190,7 @@ void Engine::Script() {
     position.Initialize(Game::GetEnemyPosition(arena_size));
 
     Movement movement;
-    movement.Initialize({10, 0}, {10, 0}, 1, 0.005f);
+    movement.Initialize(1, 0.005f);
 
     Body body {BodyType_Box, enemy_size};
 
